@@ -1,0 +1,3024 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>Habit Tracker & Progress Dashboard (2026–2027)</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              teal: '#006a61',
+              tealDark: '#004d46',
+              tealLight: '#e6f4f1',
+              slate: '#0f172a',
+              bg: '#f4fbf8',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: clip;
+      background-color: #f4fbf8;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Custom Scrollbar untuk tabel horizontal desktop */
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #006a61;
+    }
+
+    /* Sembunyikan scrollbar pada horizontal day strip */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Checkbox interaktif kustom untuk tabel matrix */
+    .habit-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #cbd5e1;
+      border-radius: 7px;
+      background-color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .habit-checkbox:hover {
+      border-color: #006a61;
+      background-color: #f0fdfa;
+      transform: scale(1.06);
+    }
+    .habit-checkbox:checked {
+      background-color: #006a61;
+      border-color: #006a61;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+      background-size: 16px 16px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* Safe-area padding untuk perangkat berponi / iPhone */
+    .pb-safe {
+      padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
+    }
+
+    /* Animasi halus */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-teal-200 selection:text-teal-950">
+
+  <!-- ==================== HEADER UTAMA (ADAPTIF MOBILE, TABLET & DESKTOP) ==================== -->
+  <header class="bg-[#0f172a] text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
+    <div class="max-w-[1600px] mx-auto px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8">
+      <!-- Baris Atas Header -->
+      <div class="py-2.5 sm:py-3.5 flex items-center justify-between gap-1.5 min-[375px]:gap-2 sm:gap-3 md:border-b md:border-slate-800/80">
+        <!-- Logo & Judul -->
+        <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#006a61] to-emerald-500 flex items-center justify-center shadow-md shrink-0">
+            <svg class="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-xs min-[375px]:text-sm sm:text-lg font-bold tracking-tight text-white leading-tight truncate">
+              Habit Tracker<span class="hidden sm:inline"> & Progress Dashboard</span>
+            </h1>
+            <p class="text-[10px] min-[375px]:text-[11px] sm:text-xs text-slate-400 truncate">
+              Des 2026 – Des 2027
+            </p>
+          </div>
+        </div>
+
+        <!-- Kontrol Kanan: Pemilih Periode, Status Cloud, Kode Sync, Export/Import -->
+        <div class="flex items-center gap-1 min-[375px]:gap-1.5 sm:gap-2 shrink-0">
+          <!-- Pemilih Periode Bulan (Single Source of Truth dengan Tombol Navigasi Cepat) -->
+          <div class="flex items-center bg-slate-800/95 border border-slate-700 rounded-xl px-0.5 min-[375px]:px-1 sm:px-2 py-1 min-h-[38px]">
+            <button type="button" id="btnHeaderPrevMonth" title="Bulan Sebelumnya" aria-label="Bulan Sebelumnya" class="p-1 text-slate-400 hover:text-white disabled:opacity-30 transition rounded-lg">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <label for="monthSelector" class="hidden lg:inline text-xs text-slate-400 ml-1 mr-1.5 font-medium whitespace-nowrap">Periode:</label>
+            <select id="monthSelector" aria-label="Pilih Periode Bulan" class="bg-transparent text-[11px] min-[375px]:text-xs sm:text-sm font-semibold text-white focus:outline-none cursor-pointer px-0.5">
+              <!-- Diisi dinamis oleh JS -->
+            </select>
+            <button type="button" id="btnHeaderNextMonth" title="Bulan Berikutnya" aria-label="Bulan Berikutnya" class="p-1 text-slate-400 hover:text-white disabled:opacity-30 transition rounded-lg">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Tombol Status Sinkronisasi Cloud -->
+          <button id="btnOpenSyncModal" type="button" class="flex items-center gap-1 min-[375px]:gap-1.5 sm:gap-2 bg-[#006a61] hover:bg-[#00554e] text-white text-[11px] min-[375px]:text-xs sm:text-sm font-medium px-2 min-[375px]:px-2.5 sm:px-3.5 py-2 min-h-[38px] rounded-xl transition shadow-sm border border-emerald-600/40">
+            <span id="syncStatusDot" class="w-2 h-2 min-[375px]:w-2.5 min-[375px]:h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+            <span id="syncStatusText" class="hidden sm:inline">Menghubungkan...</span>
+            <span id="syncStatusTextMobile" class="sm:hidden font-semibold">Sync</span>
+          </button>
+
+          <!-- Tombol Cepat Kode Sinkronisasi (Desktop & Tablet) -->
+          <button id="btnHeaderCopySyncCode" type="button" title="Klik untuk menyalin atau mengubah Kode Sinkronisasi antar perangkat" class="hidden md:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-mono font-semibold px-3 py-2 min-h-[38px] rounded-xl border border-slate-700 transition">
+            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span id="headerSyncCodeLabel">habit-tw3o5evr-jblp0h2p</span>
+          </button>
+
+          <!-- Tombol Export JSON (Desktop) -->
+          <button id="btnExportJson" type="button" title="Unduh cadangan data dalam format JSON" class="hidden xl:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-3 py-2 min-h-[38px] rounded-xl border border-slate-700 transition">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Export JSON</span>
+          </button>
+
+          <!-- Tombol Import JSON (Desktop) -->
+          <button id="btnImportJson" type="button" title="Pulihkan data dari file JSON" class="hidden xl:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-3 py-2 min-h-[38px] rounded-xl border border-slate-700 transition">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Import JSON</span>
+          </button>
+          <input type="file" id="importJsonInput" accept=".json,application/json" class="hidden" />
+        </div>
+      </div>
+
+      <!-- Baris Bawah Header: Navigasi Desktop & Tablet (>= md) -->
+      <nav class="hidden md:flex items-center gap-2 pt-1" aria-label="Navigasi Desktop">
+        <button type="button" data-tab="dashboard" class="nav-tab active-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 border-emerald-400 text-white bg-slate-800/70 transition whitespace-nowrap">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button type="button" data-tab="tracker" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/40 transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <span>Habit Tracker</span>
+        </button>
+
+        <button type="button" data-tab="pengaturan" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/40 transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Pengaturan</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== KONTEN UTAMA ==================== -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8 space-y-5 sm:space-y-6">
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section id="tab-dashboard" class="tab-panel space-y-5 sm:space-y-6 animate-fade-in">
+      <!-- Banner Info Periode & Aksi Cepat -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-emerald-900/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-[#006a61]" id="dashBadgePeriod">Desember 2026</span>
+            <span class="text-xs text-slate-500" id="dashDaysInfo">31 Hari Kalender</span>
+          </div>
+          <h2 class="text-base sm:text-xl font-bold text-[#0f172a] mt-1">
+            Ringkasan Performa & Analitik
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Metrik dan grafik terhubung real-time dengan checklist Habit Tracker Anda.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+          <button id="btnLoadDemoData" type="button" class="px-3 py-2.5 sm:py-2 min-h-[40px] text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006a61] border border-emerald-200 transition text-center">
+            Isi Simulasi
+          </button>
+          <button type="button" onclick="window.switchTab('tracker')" class="px-3.5 py-2.5 sm:py-2 min-h-[40px] text-xs font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition text-center">
+            Checklist Harian →
+          </button>
+        </div>
+      </div>
+
+      <!-- 5 Kartu KPI Eksekutif (Grid 2 Kolom di Mobile, 5 Kolom di Desktop) -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <!-- KPI 1: Total Kebiasaan Aktif -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-200/80 hover:border-[#006a61]/40 transition">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Total Habit</span>
+            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-teal-50 text-[#006a61] flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5">
+            <span id="kpiTotalHabits" class="text-xl sm:text-3xl font-extrabold text-[#0f172a]">10</span>
+            <span class="text-[11px] sm:text-xs font-medium text-slate-500">Aktif</span>
+          </div>
+          <p id="kpiTotalHabitsSub" class="mt-1 text-[11px] sm:text-xs text-slate-500 truncate">Di 5 kategori aktif</p>
+        </div>
+
+        <!-- KPI 2: Rata-rata Pencapaian (%) -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-200/80 hover:border-[#006a61]/40 transition">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Pencapaian</span>
+            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 sm:mt-3 flex items-baseline gap-2">
+            <span id="kpiAvgCompletion" class="text-xl sm:text-3xl font-extrabold text-[#006a61]">0%</span>
+          </div>
+          <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div id="kpiAvgProgressBar" class="bg-[#006a61] h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- KPI 3: Total Check-in Selesai -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-200/80 hover:border-[#006a61]/40 transition">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Check-in</span>
+            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5">
+            <span id="kpiTotalCheckins" class="text-xl sm:text-3xl font-extrabold text-[#0f172a]">0</span>
+            <span class="text-[11px] sm:text-xs font-medium text-slate-500">Selesai</span>
+          </div>
+          <p id="kpiTotalCheckinsSub" class="mt-1 text-[11px] sm:text-xs text-slate-500 truncate">Dari 245 target</p>
+        </div>
+
+        <!-- KPI 4: Kebiasaan Terbaik -->
+        <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-200/80 hover:border-[#006a61]/40 transition">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Terbaik</span>
+            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 sm:mt-3">
+            <p id="kpiBestHabitName" class="text-xs sm:text-base font-bold text-[#0f172a] line-clamp-1" title="Belum Ada Data">Belum Ada Data</p>
+            <p id="kpiBestHabitSub" class="mt-1 text-[11px] sm:text-xs font-medium text-emerald-700 truncate">Mulai centang habit</p>
+          </div>
+        </div>
+
+        <!-- KPI 5: Hari Paling Konsisten -->
+        <div class="col-span-2 lg:col-span-1 bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-200/80 hover:border-[#006a61]/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Hari Paling Konsisten</span>
+            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 sm:mt-3 flex sm:block items-baseline justify-between gap-2">
+            <p id="kpiMostConsistentDay" class="text-sm sm:text-base font-bold text-[#0f172a]">Belum Ada Data</p>
+            <p id="kpiMostConsistentSub" class="mt-0.5 sm:mt-1 text-xs font-medium text-purple-700">0% penyelesaian harian</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Baris Grafik Utama: Grafik Batang Horizontal & Grafik Tren Harian -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
+        <!-- Grafik 1: Batang Horizontal Performa Pencapaian per Kebiasaan (%) -->
+        <div class="xl:col-span-6 bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col">
+          <div class="mb-3 sm:mb-4">
+            <h3 class="text-sm sm:text-base font-bold text-[#0f172a]">Performa Pencapaian per Kebiasaan (%)</h3>
+            <p class="text-xs text-slate-500">Persentase realisasi terhadap target bulanan</p>
+          </div>
+          <div id="horizontalChartContainer" class="relative w-full overflow-hidden" style="height: 320px;">
+            <canvas id="habitBarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Grafik 2: Garis/Area Tren Konsistensi & Check-in Harian -->
+        <div class="xl:col-span-6 bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col">
+          <div class="mb-3 sm:mb-4">
+            <h3 class="text-sm sm:text-base font-bold text-[#0f172a]">Tren Konsistensi & Check-in Harian</h3>
+            <p class="text-xs text-slate-500">Jumlah kebiasaan selesai per tanggal pada bulan terpilih</p>
+          </div>
+          <div class="relative w-full overflow-hidden" style="height: 320px;">
+            <canvas id="dailyTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ringkasan Progres per Kebiasaan (Kartu di Mobile + Tabel di Desktop) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-[#0f172a]">Ringkasan Progres per Kebiasaan</h3>
+            <p class="text-xs text-slate-500 hidden sm:block">Detail target, realisasi, sisa target, dan tingkat pencapaian masing-masing kebiasaan</p>
+          </div>
+          <span id="dashHabitTableCount" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 shrink-0">10 Habit</span>
+        </div>
+
+        <!-- Tampilan Kartu Ringkas Khusus Mobile (< md) -->
+        <div id="dashHabitMobileCards" class="md:hidden divide-y divide-slate-100">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+
+        <!-- Tampilan Tabel Lengkap Desktop (>= md) -->
+        <div class="hidden md:block overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/90 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th class="py-3.5 px-4 w-12 text-center">No</th>
+                <th class="py-3.5 px-4 min-w-[220px]">Nama Kebiasaan</th>
+                <th class="py-3.5 px-4 min-w-[150px]">Kategori</th>
+                <th class="py-3.5 px-4 text-center">Target Bulanan</th>
+                <th class="py-3.5 px-4 text-center">Realisasi</th>
+                <th class="py-3.5 px-4 text-center">Sisa Target</th>
+                <th class="py-3.5 px-4 text-center">% Pencapaian</th>
+                <th class="py-3.5 px-4 min-w-[180px]">Visual Progress Bar</th>
+              </tr>
+            </thead>
+            <tbody id="dashHabitSummaryBody" class="divide-y divide-slate-100 text-sm">
+              <!-- Diisi dinamis oleh JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Seksi Ringkasan Multi-Bulan (Des 2026 – Des 2027) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-[#0f172a]">Perbandingan Multi-Bulan (2026–2027)</h3>
+            <p class="text-xs text-slate-500">Ketuk baris bulan untuk berpindah periode aktif</p>
+          </div>
+          <span class="text-xs font-medium text-[#006a61] bg-teal-50 px-2.5 py-1 rounded-full shrink-0">13 Bulan</span>
+        </div>
+
+        <!-- Grafik Perbandingan Multi-Bulan -->
+        <div class="p-3.5 sm:p-5 border-b border-slate-100 bg-slate-50/40">
+          <div class="relative w-full h-[200px] sm:h-[230px] overflow-hidden">
+            <canvas id="multiMonthChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabel Ringkasan Multi-Bulan -->
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/90 border-b border-slate-200 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th class="py-3 px-3 sm:px-4 whitespace-nowrap">Periode</th>
+                <th class="py-3 px-2.5 sm:px-4 text-center whitespace-nowrap">Target</th>
+                <th class="py-3 px-2.5 sm:px-4 text-center whitespace-nowrap">Selesai</th>
+                <th class="py-3 px-2.5 sm:px-4 text-center whitespace-nowrap">% Capai</th>
+                <th class="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Status</th>
+                <th class="py-3 px-4 whitespace-nowrap hidden sm:table-cell">Kebiasaan Terbaik</th>
+              </tr>
+            </thead>
+            <tbody id="multiMonthTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+              <!-- Diisi dinamis oleh JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: HABIT TRACKER ==================== -->
+    <section id="tab-tracker" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
+      <!-- Toolbar Kontrol Tracker -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-emerald-900/10 space-y-3.5">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-base sm:text-lg font-bold text-[#0f172a]" id="trackerHeadingMonth">Checklist — Desember 2026</h2>
+              <span id="trackerDaysBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-teal-50 text-[#006a61] border border-teal-200">31 Hari</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Ketuk kebiasaan untuk menandai selesai. Seluruh perubahan langsung tersimpan & tersinkronisasi.
+            </p>
+          </div>
+
+          <!-- Toggle Mode Tampilan: Kartu Harian vs Tabel Matrix 31 Hari -->
+          <div class="inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 self-start lg:self-auto shrink-0">
+            <button type="button" id="btnViewModeCards" class="flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold rounded-lg bg-white text-[#006a61] shadow-sm transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span>Kartu Harian</span>
+            </button>
+            <button type="button" id="btnViewModeMatrix" class="flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Tabel 31 Hari</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Baris Filter & Aksi -->
+        <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 pt-2.5 border-t border-slate-100">
+          <!-- Filter Kategori -->
+          <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 sm:px-3 py-2 min-h-[42px] min-w-0 flex-1 sm:flex-initial sm:min-w-[210px]">
+            <label for="trackerCategoryFilter" class="text-xs font-medium text-slate-500 mr-1.5 shrink-0">Kategori:</label>
+            <select id="trackerCategoryFilter" class="w-full min-w-0 truncate bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer">
+              <option value="ALL">Semua</option>
+              <!-- Diisi dinamis -->
+            </select>
+          </div>
+
+          <!-- Aksi Kanan: Tambah Habit & Menu Opsi Lainnya -->
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <!-- Tombol Cepat + Tambah Habit Baru -->
+            <button id="btnQuickAddHabit" type="button" class="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 min-h-[42px] text-xs sm:text-sm font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition whitespace-nowrap">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Habit Baru</span>
+            </button>
+
+            <!-- Menu Opsi Tambahan -->
+            <div class="relative" id="trackerMoreMenuWrapper">
+              <button type="button" id="btnTrackerMoreMenu" aria-haspopup="true" aria-expanded="false" aria-label="Opsi Lainnya" title="Opsi Lainnya" class="w-[42px] h-[42px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center border border-slate-200/80 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                </svg>
+              </button>
+
+              <div id="trackerMoreMenu" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-30 animate-fade-in">
+                <button type="button" id="menuGoToSettings" class="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+                  <svg class="w-4 h-4 text-[#006a61] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Kelola Target & Urutan Habit</span>
+                </button>
+                <div class="my-1 border-t border-slate-100"></div>
+                <button type="button" id="menuResetMonthLogs" class="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-500 hover:text-rose-700 hover:bg-rose-50/70 flex items-center gap-2.5 transition">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <span>Reset Checklist Bulan Ini...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE A: TAMPILAN KARTU HARIAN (DIOPTIMALKAN UNTUK TOUCH & SWIPE) -->
+      <div id="trackerCardsView" class="space-y-4">
+        <!-- Strip Navigasi Tanggal Horizontal -->
+        <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-slate-200/80">
+          <div class="flex items-center justify-between mb-2.5 px-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pilih Tanggal</span>
+            <span class="text-[11px] text-slate-400">Geser tanggal atau swipe kartu</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="btnPrevDay" aria-label="Tanggal Sebelumnya" class="w-10 h-16 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-35 disabled:pointer-events-none text-slate-700 flex items-center justify-center shrink-0 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div id="mobileDayStrip" class="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-0.5 scroll-smooth">
+              <!-- Pill tanggal 1..31 diisi dinamis oleh JS -->
+            </div>
+
+            <button type="button" id="btnNextDay" aria-label="Tanggal Berikutnya" class="w-10 h-16 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-35 disabled:pointer-events-none text-slate-700 flex items-center justify-center shrink-0 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ringkasan Progres Tanggal Terpilih + Aksi Tandai Semua -->
+        <div class="bg-gradient-to-r from-[#0f172a] to-[#006a61] text-white rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p id="dailyFocusDateTitle" class="text-sm sm:text-base font-bold truncate">Selasa, 1 Desember 2026</p>
+              <p id="dailyFocusSubtitle" class="text-xs text-teal-100 mt-0.5">0 dari 10 kebiasaan selesai (0%)</p>
+            </div>
+            <button type="button" id="btnToggleAllSelectedDay" class="px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/25 transition shrink-0">
+              Centang Semua
+            </button>
+          </div>
+          <div class="mt-3 w-full bg-white/20 rounded-full h-2 overflow-hidden">
+            <div id="dailyFocusProgressBar" class="bg-emerald-300 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Daftar Kartu Kebiasaan Ramah Sentuhan (Mendukung Swipe Kiri/Kanan) -->
+        <div id="dailyFocusHabitList" class="grid grid-cols-1 md:grid-cols-2 gap-3 touch-pan-y">
+          <!-- Kartu habit diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+      <!-- MODE B: TABEL MATRIX CHECKLIST BULANAN (31 HARI) -->
+      <div id="trackerMatrixView" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div class="lg:hidden px-4 py-2 bg-teal-50/80 border-b border-teal-100 text-[11px] font-medium text-[#006a61] flex items-center justify-between">
+          <span>Geser tabel ke samping untuk melihat tanggal 1–31 & ringkasan</span>
+          <span>⇄</span>
+        </div>
+        <div id="trackerMatrixScroll" class="overflow-x-auto custom-scrollbar relative">
+          <table id="trackerMatrixTable" class="w-full border-collapse text-sm select-none">
+            <thead id="trackerTableHead">
+              <!-- Diisi dinamis oleh JS -->
+            </thead>
+            <tbody id="trackerTableBody" class="divide-y divide-slate-100">
+              <!-- Diisi dinamis oleh JS -->
+            </tbody>
+            <tfoot id="trackerTableFoot" class="bg-slate-50 border-t-2 border-slate-300 font-semibold text-xs">
+              <!-- Diisi dinamis oleh JS -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: PENGATURAN ==================== -->
+    <section id="tab-pengaturan" class="tab-panel hidden space-y-5 sm:space-y-6 animate-fade-in">
+      <!-- Banner Panduan Singkat -->
+      <div class="bg-gradient-to-r from-[#0f172a] to-[#006a61] text-white rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold">Pengaturan Master Kebiasaan & Kategori</h2>
+          <p class="text-xs sm:text-sm text-teal-100 mt-1">
+            Perubahan judul habit, kategori, target bulanan, atau penambahan habit baru otomatis diperbarui ke seluruh 13 bulan dan Dashboard.
+          </p>
+        </div>
+        <button id="btnRestoreDefaultTemplates" type="button" class="px-4 py-2.5 min-h-[40px] text-xs font-semibold rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 transition self-start md:self-auto whitespace-nowrap">
+          Pulihkan 10 Template Awal
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+        <!-- Kolom Kiri (8 kolom): Master Daftar Kebiasaan -->
+        <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+          <div class="px-4 sm:px-5 py-4 border-b border-slate-100">
+            <h3 class="text-base font-bold text-[#0f172a]">Master Daftar Kebiasaan</h3>
+            <p class="text-xs text-slate-500">Tambah kebiasaan baru atau ubah judul, kategori, dan target bulanan di bawah ini.</p>
+          </div>
+
+          <!-- Form Tambah Habit Baru -->
+          <form id="formAddHabitSettings" class="p-4 sm:p-5 bg-emerald-50/50 border-b border-slate-200/80 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <div class="sm:col-span-5">
+              <label for="newHabitTitle" class="block text-xs font-semibold text-slate-700 mb-1">Nama Kebiasaan Baru</label>
+              <input type="text" id="newHabitTitle" required placeholder="Contoh: Lari Pagi 5 KM" class="w-full px-3.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20" />
+            </div>
+
+            <div class="sm:col-span-4">
+              <label for="newHabitCategory" class="block text-xs font-semibold text-slate-700 mb-1">Kategori</label>
+              <select id="newHabitCategory" class="w-full px-3.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20">
+                <!-- Diisi dinamis -->
+              </select>
+            </div>
+
+            <div class="sm:col-span-3 flex gap-2">
+              <div class="w-24 shrink-0">
+                <label for="newHabitTarget" class="block text-xs font-semibold text-slate-700 mb-1">Target</label>
+                <input type="number" inputmode="numeric" id="newHabitTarget" min="1" max="31" value="20" required class="w-full px-2.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl text-center font-semibold focus:outline-none focus:border-[#006a61]" />
+              </div>
+              <button type="submit" class="flex-1 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition self-end min-h-[44px]">
+                + Tambah
+              </button>
+            </div>
+          </form>
+
+          <!-- Tampilan Kartu Edit Kebiasaan Khusus Mobile (< md) -->
+          <div id="settingsHabitMobileCards" class="md:hidden p-3.5 space-y-3 bg-slate-50/40">
+            <!-- Diisi dinamis oleh JS -->
+          </div>
+
+          <!-- Tabel Edit Master Kebiasaan Desktop (>= md) -->
+          <div class="hidden md:block overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-3 w-12 text-center">No</th>
+                  <th class="py-3 px-3 min-w-[220px]">Judul Kebiasaan (Klik untuk Edit)</th>
+                  <th class="py-3 px-3 min-w-[165px]">Kategori</th>
+                  <th class="py-3 px-3 w-28 text-center">Target / Bln</th>
+                  <th class="py-3 px-3 w-28 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="settingsHabitTableBody" class="divide-y divide-slate-100 text-sm">
+                <!-- Diisi dinamis oleh JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan (4 kolom): Manajemen Master Kategori & Cadangan Data -->
+        <div class="lg:col-span-4 space-y-5">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="px-4 sm:px-5 py-4 border-b border-slate-100">
+              <h3 class="text-base font-bold text-[#0f172a]">Master Kategori</h3>
+              <p class="text-xs text-slate-500">Tambah kategori baru agar tersedia di semua dropdown.</p>
+            </div>
+
+            <!-- Form Tambah Kategori Baru -->
+            <form id="formAddCategory" class="p-4 bg-slate-50/70 border-b border-slate-200/80 space-y-3">
+              <div>
+                <label for="newCategoryName" class="block text-xs font-semibold text-slate-700 mb-1">Nama Kategori Baru</label>
+                <div class="flex gap-2">
+                  <input type="text" id="newCategoryName" required placeholder="Contoh: Karir & Bisnis" class="flex-1 px-3.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20" />
+                  <button type="submit" class="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-[#0f172a] hover:bg-slate-800 text-white transition shrink-0 min-h-[44px]">
+                    + Tambah
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Daftar Kategori -->
+            <div id="settingsCategoryList" class="p-4 divide-y divide-slate-100 max-h-[480px] overflow-y-auto custom-scrollbar">
+              <!-- Diisi dinamis oleh JS -->
+            </div>
+          </div>
+
+          <!-- Kartu Cadangan & Sinkronisasi (Memudahkan akses di Mobile & Tablet) -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 space-y-3">
+            <div>
+              <h3 class="text-sm font-bold text-[#0f172a]">Cadangan & Sinkronisasi Perangkat</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Ekspor/impor file JSON atau atur Kode Ruang Cloud untuk sinkronisasi otomatis.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="document.getElementById('btnExportJson').click()" class="px-3 py-2.5 min-h-[40px] text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006a61] border border-emerald-200 transition">
+                Export JSON
+              </button>
+              <button type="button" onclick="document.getElementById('btnImportJson').click()" class="px-3 py-2.5 min-h-[40px] text-xs font-semibold rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition">
+                Import JSON
+              </button>
+            </div>
+            <button type="button" onclick="document.getElementById('btnOpenSyncModal').click()" class="w-full px-3.5 py-2.5 min-h-[40px] text-xs font-semibold rounded-xl bg-[#0f172a] hover:bg-slate-800 text-white transition">
+              Atur Kode Sinkronisasi Cloud
+            </button>
+          </div>
+
+          <!-- Zona Pemeliharaan Data (Aksi Reset Bulan Terlindungi) -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 space-y-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-700">Pemeliharaan Progres Bulanan</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Kosongkan tanda centang khusus untuk periode <strong id="settingsMaintenanceMonthLabel" class="text-slate-700">Desember 2026</strong> apabila ingin mengulang dari awal.</p>
+            </div>
+            <button type="button" id="btnSettingsResetMonth" class="w-full px-3.5 py-2.5 min-h-[40px] text-xs font-semibold rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 transition">
+              Reset Progres Bulan Ini...
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER (DESKTOP) ==================== -->
+  <footer class="hidden md:block bg-white border-t border-slate-200/80 py-4 px-4 sm:px-6 lg:px-8 mt-auto">
+    <div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <p>Habit Tracker & Progress Dashboard • Periode Aktif: Desember 2026 – Desember 2027</p>
+      <p>Sinkronisasi Cloud Real-Time & Cadangan JSON Lintas PC, Laptop & Mobile</p>
+    </div>
+  </footer>
+
+  <!-- ==================== MOBILE BOTTOM NAVIGATION BAR (< md) ==================== -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_-4px_rgba(15,23,42,0.1)] pb-safe" aria-label="Navigasi Mobile">
+    <div class="grid grid-cols-4 items-center px-2 pt-1.5">
+      <button type="button" data-tab="dashboard" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[#006a61] bg-teal-50/90 font-bold transition min-h-[52px]">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+        </svg>
+        <span class="text-[11px]">Dashboard</span>
+      </button>
+
+      <button type="button" data-tab="tracker" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-medium transition min-h-[52px]">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        <span class="text-[11px]">Tracker</span>
+      </button>
+
+      <button type="button" id="btnMobileQuickAdd" class="flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-700 font-semibold transition min-h-[52px]">
+        <div class="w-8 h-8 rounded-full bg-[#006a61] text-white flex items-center justify-center shadow-sm mb-0.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <span class="text-[10px] text-[#006a61] font-bold">+ Habit</span>
+      </button>
+
+      <button type="button" data-tab="pengaturan" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-medium transition min-h-[52px]">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-[11px]">Pengaturan</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==================== MODAL 1: SINKRONISASI CLOUD & CADANGAN JSON ==================== -->
+  <div id="syncModal" data-modal-backdrop="syncModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
+      <div class="px-5 sm:px-6 py-4 bg-[#0f172a] text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#006a61] flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold">Sinkronisasi Cloud & Cadangan Data</h3>
+            <p class="text-[11px] text-slate-400">Sinkron real-time antara HP, Laptop & PC</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.closeModal('syncModal')" class="text-slate-400 hover:text-white p-2 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 space-y-4 max-h-[85dvh] overflow-y-auto custom-scrollbar pb-safe">
+        <!-- Status Koneksi -->
+        <div id="modalSyncStatusBox" class="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-start gap-3">
+          <span id="modalSyncDot" class="w-3 h-3 rounded-full bg-emerald-500 mt-1 shrink-0"></span>
+          <div class="text-xs">
+            <p id="modalSyncHeadline" class="font-bold text-[#0f172a]">Status: Menghubungkan ke Firebase...</p>
+            <p id="modalSyncDesc" class="text-slate-600 mt-0.5 leading-relaxed">Memeriksa koneksi Cloud Firestore pada proyek ahemnajibproject.</p>
+          </div>
+        </div>
+
+        <!-- Kode Ruang Sinkronisasi -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#006a61]">Kode Ruang Sinkronisasi (HP ↔ Laptop ↔ PC)</h4>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Masukkan <strong>Kode Ruang Sinkronisasi</strong> yang sama di semua perangkat Anda. Semua centang dan pengaturan langsung tersinkronisasi real-time.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="syncRoomCodeInput" value="habit-tw3o5evr-jblp0h2p" placeholder="Contoh: kode-rahasia-panjang-anda" class="flex-1 px-3 py-2.5 text-base sm:text-sm font-mono bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61]" />
+            <div class="grid grid-cols-2 sm:flex gap-2">
+              <button type="button" id="btnCopySyncCode" class="px-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition">
+                Salin Kode
+              </button>
+              <button type="button" id="btnConnectSyncRoom" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white transition">
+                Terapkan
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 text-xs">
+            <span class="text-emerald-700 font-semibold">Ruang Aktif: <code id="activeRoomLabel" class="bg-emerald-100/80 px-1.5 py-0.5 rounded">habit-tw3o5evr-jblp0h2p</code></span>
+            <button type="button" id="btnResetDefaultRoom" class="text-slate-500 hover:text-[#006a61] hover:underline font-medium">Reset ke Default</button>
+          </div>
+        </div>
+
+        <!-- ID Sesi Firebase Auth -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">UID Sesi Firebase Authentication</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="displayFullUserId" readonly value="Memuat..." class="flex-1 px-3 py-2 text-xs font-mono bg-slate-100 border border-slate-300 rounded-xl text-slate-700 select-all" />
+            <button type="button" id="btnCopyUserId" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 transition shrink-0">
+              Salin UID
+            </button>
+          </div>
+        </div>
+
+        <!-- Cadangan File JSON -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+          <div class="text-xs">
+            <p class="font-bold text-[#0f172a]">Cadangan Offline / Pindah File Manual (JSON)</p>
+            <p class="text-slate-500 mt-0.5">Unduh atau pulihkan seluruh data kebiasaan Anda kapan saja.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" onclick="document.getElementById('btnExportJson').click()" class="px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-[#006a61] text-white hover:bg-[#00554e] transition text-center shadow-sm">
+              Export JSON
+            </button>
+            <button type="button" onclick="document.getElementById('btnImportJson').click()" class="px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-sky-600 text-white hover:bg-sky-700 transition text-center shadow-sm">
+              Import JSON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: TAMBAH HABIT CEPAT ==================== -->
+  <div id="quickAddModal" data-modal-backdrop="quickAddModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-fade-in max-h-[88dvh] overflow-y-auto">
+      <div class="px-5 py-4 bg-[#006a61] text-white flex items-center justify-between">
+        <h3 class="text-base font-bold">Tambah Kebiasaan Baru</h3>
+        <button type="button" onclick="window.closeModal('quickAddModal')" class="text-teal-100 hover:text-white p-1.5 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="formQuickAddHabit" class="p-5 space-y-4 pb-safe">
+        <div>
+          <label for="quickHabitTitle" class="block text-xs font-semibold text-slate-700 mb-1">Nama Kebiasaan</label>
+          <input type="text" id="quickHabitTitle" required placeholder="Contoh: Belajar Bahasa Inggris 20 Menit" class="w-full px-3.5 py-3 text-base sm:text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="quickHabitCategory" class="block text-xs font-semibold text-slate-700 mb-1">Kategori</label>
+            <select id="quickHabitCategory" class="w-full px-3 py-3 text-base sm:text-sm border border-slate-300 rounded-xl bg-white focus:outline-none focus:border-[#006a61]">
+              <!-- Diisi dinamis -->
+            </select>
+          </div>
+          <div>
+            <label for="quickHabitTarget" class="block text-xs font-semibold text-slate-700 mb-1">Target / Bulan</label>
+            <input type="number" inputmode="numeric" id="quickHabitTarget" min="1" max="31" value="20" required class="w-full px-3 py-3 text-base sm:text-sm border border-slate-300 rounded-xl text-center font-semibold focus:outline-none focus:border-[#006a61]" />
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500">
+          Kebiasaan baru akan otomatis ditambahkan ke seluruh periode bulan (Des 2026 – Des 2027) dan Dashboard.
+        </p>
+        <div class="grid grid-cols-2 sm:flex sm:justify-end gap-2 pt-2">
+          <button type="button" onclick="window.closeModal('quickAddModal')" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            Batal
+          </button>
+          <button type="submit" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition">
+            Simpan Kebiasaan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: KONFIRMASI KUSTOM (PENGGANTI CONFIRM()) ==================== -->
+  <div id="confirmModal" data-modal-backdrop="confirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
+      <div class="p-5 sm:p-6 pb-safe">
+        <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 id="confirmModalTitle" class="text-base font-bold text-[#0f172a]">Konfirmasi Tindakan</h3>
+        <p id="confirmModalMessage" class="text-xs text-slate-600 mt-1.5 leading-relaxed">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+        <div id="confirmTypedGuard" class="hidden mt-3.5 p-3 rounded-xl bg-rose-50/80 border border-rose-200 space-y-2">
+          <label for="confirmTypedInput" class="block text-[11px] font-semibold text-rose-900">
+            Ketik <code id="confirmRequiredKeyword" class="px-1.5 py-0.5 rounded bg-white border border-rose-300 font-mono font-bold text-rose-700">RESET</code> untuk mengonfirmasi:
+          </label>
+          <input type="text" id="confirmTypedInput" autocomplete="off" spellcheck="false" placeholder="Ketik RESET di sini" class="w-full px-3 py-2 text-base sm:text-xs font-mono font-bold uppercase bg-white border border-rose-300 rounded-lg focus:outline-none focus:border-rose-600" />
+        </div>
+        <div class="mt-5 grid grid-cols-2 sm:flex sm:justify-end gap-2">
+          <button type="button" id="btnConfirmCancel" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            Batal
+          </button>
+          <button type="button" id="btnConfirmProceed" class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:pointer-events-none text-white transition">
+            Ya, Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NOTIFIKASI TOAST (POSISI ADAPTIF MOBILE & DESKTOP) ==================== -->
+  <div id="toastContainer" class="fixed bottom-20 left-3 right-3 sm:left-auto sm:bottom-5 sm:right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==================== LOGIKA APLIKASI & CLOUD FIRESTORE ==================== -->
+  <script type="module">
+    /* ==========================================================================
+       0. KONFIGURASI FIREBASE PROJECT & SAFE STORAGE HELPERS
+       ========================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCm2ruhX3fZSqzznyRbirNrimp8mQ31lUQ",
+      authDomain: "ahemnajibproject.firebaseapp.com",
+      projectId: "ahemnajibproject",
+      storageBucket: "ahemnajibproject.firebasestorage.app",
+      messagingSenderId: "273190620009",
+      appId: "1:273190620009:web:ce1dc239404038386c0bf8",
+      measurementId: "G-T3QP9X2ZKB"
+    };
+
+    const FIRESTORE_COLLECTION = "habit_tracker_workspaces";
+    const DEFAULT_SYNC_CODE = "habit-tw3o5evr-jblp0h2p";
+    const STORAGE_KEY_SYNC_CODE = "habit_tracker_sync_code_v1";
+    const STORAGE_KEY_SELECTED_MONTH = "habit_tracker_selected_month_v1";
+    const STORAGE_KEY_DATA_PREFIX = "habit_tracker_workspace_cache_";
+
+    function safeStorageGet(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /* ==========================================================================
+       1. KONFIGURASI PERIODE (DES 2026 – DES 2027) & TEMPLATE DEFAULT
+       ========================================================================== */
+    const MONTHS_CONFIG = [
+      { id: '2026-12', label: 'Des 2026', fullName: 'Desember 2026', year: 2026, monthIndex: 11, days: 31 },
+      { id: '2027-01', label: 'Jan 2027', fullName: 'Januari 2027', year: 2027, monthIndex: 0, days: 31 },
+      { id: '2027-02', label: 'Feb 2027', fullName: 'Februari 2027', year: 2027, monthIndex: 1, days: 28 },
+      { id: '2027-03', label: 'Mar 2027', fullName: 'Maret 2027', year: 2027, monthIndex: 2, days: 31 },
+      { id: '2027-04', label: 'Apr 2027', fullName: 'April 2027', year: 2027, monthIndex: 3, days: 30 },
+      { id: '2027-05', label: 'Mei 2027', fullName: 'Mei 2027', year: 2027, monthIndex: 4, days: 31 },
+      { id: '2027-06', label: 'Jun 2027', fullName: 'Juni 2027', year: 2027, monthIndex: 5, days: 30 },
+      { id: '2027-07', label: 'Jul 2027', fullName: 'Juli 2027', year: 2027, monthIndex: 6, days: 31 },
+      { id: '2027-08', label: 'Agu 2027', fullName: 'Agustus 2027', year: 2027, monthIndex: 7, days: 31 },
+      { id: '2027-09', label: 'Sep 2027', fullName: 'September 2027', year: 2027, monthIndex: 8, days: 30 },
+      { id: '2027-10', label: 'Okt 2027', fullName: 'Oktober 2027', year: 2027, monthIndex: 9, days: 31 },
+      { id: '2027-11', label: 'Nov 2027', fullName: 'November 2027', year: 2027, monthIndex: 10, days: 30 },
+      { id: '2027-12', label: 'Des 2027', fullName: 'Desember 2027', year: 2027, monthIndex: 11, days: 31 },
+    ];
+
+    const DAY_NAMES_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const DAY_FULL_NAMES_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+    const DEFAULT_CATEGORIES = [
+      { name: 'Kesehatan', color: 'emerald' },
+      { name: 'Produktivitas', color: 'sky' },
+      { name: 'Pengembangan Diri', color: 'violet' },
+      { name: 'Mindfulness', color: 'teal' },
+      { name: 'Keuangan', color: 'amber' },
+      { name: 'Sosial & Keluarga', color: 'rose' },
+      { name: 'Spiritual / Ibadah', color: 'indigo' },
+      { name: 'Hobi & Kreativitas', color: 'orange' },
+    ];
+
+    const CATEGORY_BADGE_STYLES = {
+      emerald: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      sky: 'bg-sky-100 text-sky-800 border-sky-200',
+      violet: 'bg-violet-100 text-violet-800 border-violet-200',
+      teal: 'bg-teal-100 text-teal-800 border-teal-200',
+      amber: 'bg-amber-100 text-amber-800 border-amber-200',
+      rose: 'bg-rose-100 text-rose-800 border-rose-200',
+      indigo: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+      orange: 'bg-orange-100 text-orange-800 border-orange-200',
+      slate: 'bg-slate-100 text-slate-800 border-slate-200'
+    };
+
+    const EXTRA_BADGE_COLORS = ['indigo', 'orange', 'rose', 'teal', 'violet', 'sky', 'emerald', 'amber'];
+
+    const DEFAULT_HABITS = [
+      { id: 'hab-1', title: 'Olahraga 30 Menit', category: 'Kesehatan', target: 20 },
+      { id: 'hab-2', title: 'Minum Air 2 Liter', category: 'Kesehatan', target: 30 },
+      { id: 'hab-3', title: 'Tidur Sebelum Jam 23.00', category: 'Kesehatan', target: 25 },
+      { id: 'hab-4', title: 'Membaca Buku 20 Halaman', category: 'Pengembangan Diri', target: 25 },
+      { id: 'hab-5', title: 'Belajar Skill Baru / Kursus', category: 'Pengembangan Diri', target: 20 },
+      { id: 'hab-6', title: 'Deep Work Tanpa Distraksi 2 Jam', category: 'Produktivitas', target: 22 },
+      { id: 'hab-7', title: 'Menyusun To-Do List Harian', category: 'Produktivitas', target: 28 },
+      { id: 'hab-8', title: 'Meditasi / Journaling 10 Menit', category: 'Mindfulness', target: 25 },
+      { id: 'hab-9', title: 'Mencatat Pengeluaran Harian', category: 'Keuangan', target: 30 },
+      { id: 'hab-10', title: 'Tanpa Jajan / Coffee Shop', category: 'Keuangan', target: 15 },
+    ];
+
+    /* ==========================================================================
+       2. STATE APLIKASI IN-MEMORY & VARIABEL FIREBASE
+       ========================================================================== */
+    function sanitizeSyncCode(raw) {
+      const cleaned = String(raw || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      return cleaned || DEFAULT_SYNC_CODE;
+    }
+
+    const isMobileViewport = () => window.innerWidth < 768;
+
+    let syncRoomCode = sanitizeSyncCode(safeStorageGet(STORAGE_KEY_SYNC_CODE) || DEFAULT_SYNC_CODE);
+    const savedMonth = safeStorageGet(STORAGE_KEY_SELECTED_MONTH);
+    const initialMonth = (savedMonth && MONTHS_CONFIG.some(m => m.id === savedMonth)) ? savedMonth : '2026-12';
+
+    let state = {
+      selectedMonth: initialMonth,
+      selectedDay: 1,
+      trackerViewMode: isMobileViewport() ? 'cards' : 'matrix',
+      activeTab: 'dashboard',
+      categoryFilter: 'ALL',
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      habits: JSON.parse(JSON.stringify(DEFAULT_HABITS)),
+      logs: {},
+      updatedAt: Date.now()
+    };
+
+    // Flag agar auto-scroll pil tanggal hanya berjalan saat tanggal/bulan berubah
+    let shouldCenterDayPill = true;
+    // Flag pencegah synthetic click setelah swipe horizontal pada kartu harian
+    let suppressNextCardClick = false;
+    let suppressCardClickTimer = null;
+
+    // State Firebase & Sinkronisasi (diisi secara dinamis saat bootstrap)
+    let firebaseApp = null;
+    let auth = null;
+    let db = null;
+    let firestoreDocFn = null;
+    let firestoreSetDocFn = null;
+    let firestoreOnSnapshotFn = null;
+    let currentUser = null;
+    let isCloudConnected = false;
+    let unsubscribeSnapshot = null;
+    let saveDebounceTimer = null;
+    let isApplyingRemoteUpdate = false;
+
+    // Instance Chart.js
+    let habitBarChartInstance = null;
+    let dailyTrendChartInstance = null;
+    let multiMonthChartInstance = null;
+
+    /* ==========================================================================
+       3. UTILITAS UI: TOAST, MODAL, CLIPBOARD MODERN, DATA INTEGRITY
+       ========================================================================== */
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function ensureHabitCategoriesExist() {
+      if (!Array.isArray(state.categories) || state.categories.length === 0) {
+        state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+      state.habits.forEach(h => {
+        if (!h.category) {
+          h.category = state.categories[0].name;
+          return;
+        }
+        const found = state.categories.some(c => c.name === h.category);
+        if (!found) {
+          const colorPick = EXTRA_BADGE_COLORS[state.categories.length % EXTRA_BADGE_COLORS.length];
+          state.categories.push({ name: h.category, color: colorPick });
+        }
+      });
+    }
+
+    async function copyTextToClipboard(text) {
+      const value = String(text || '');
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch (e) {
+        // Fallback ke textarea
+      }
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        const ok = document.execCommand('copy');
+        textarea.remove();
+        return ok;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bgMap = {
+        success: 'bg-[#0f172a] border-emerald-500 text-white',
+        info: 'bg-sky-900 border-sky-400 text-white',
+        error: 'bg-rose-900 border-rose-400 text-white'
+      };
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border-l-4 text-xs sm:text-sm font-medium animate-fade-in ${bgMap[type] || bgMap.success}`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'error' ? 'bg-rose-400' : 'bg-emerald-400'} shrink-0"></span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => toast.remove(), 260);
+      }, 3000);
+    }
+
+    function openModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) {
+        el.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    window.closeModal = function(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.add('hidden');
+      const anyOpen = Array.from(document.querySelectorAll('[data-modal-backdrop]')).some(m => !m.classList.contains('hidden'));
+      if (!anyOpen) {
+        document.body.style.overflow = '';
+      }
+    };
+
+    let pendingConfirmCallback = null;
+    let requiredConfirmWord = '';
+
+    function openConfirmModal(title, message, onConfirm, options = {}) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').textContent = message;
+      pendingConfirmCallback = onConfirm;
+
+      const guardBox = document.getElementById('confirmTypedGuard');
+      const typedInput = document.getElementById('confirmTypedInput');
+      const keywordLabel = document.getElementById('confirmRequiredKeyword');
+      const proceedBtn = document.getElementById('btnConfirmProceed');
+
+      requiredConfirmWord = options.requireText ? String(options.requireText).trim().toUpperCase() : '';
+      if (requiredConfirmWord) {
+        keywordLabel.textContent = requiredConfirmWord;
+        typedInput.value = '';
+        guardBox.classList.remove('hidden');
+        proceedBtn.disabled = true;
+      } else {
+        guardBox.classList.add('hidden');
+        typedInput.value = '';
+        proceedBtn.disabled = false;
+      }
+
+      openModal('confirmModal');
+      if (requiredConfirmWord) {
+        setTimeout(() => typedInput.focus(), 80);
+      }
+    }
+
+    /* ==========================================================================
+       4. INTEGRASI FIREBASE AUTH & CLOUD FIRESTORE (REAL-TIME + LOCAL FALLBACK)
+       ========================================================================== */
+    function saveStateToLocalCache() {
+      const payload = {
+        categories: state.categories,
+        habits: state.habits,
+        logs: state.logs,
+        updatedAt: state.updatedAt
+      };
+      safeStorageSet(STORAGE_KEY_DATA_PREFIX + syncRoomCode, JSON.stringify(payload));
+    }
+
+    function loadStateFromLocalCache() {
+      try {
+        const raw = safeStorageGet(STORAGE_KEY_DATA_PREFIX + syncRoomCode);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.habits)) {
+          state.categories = Array.isArray(parsed.categories) && parsed.categories.length > 0
+            ? parsed.categories
+            : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+          state.habits = parsed.habits;
+          state.logs = parsed.logs && typeof parsed.logs === 'object' ? parsed.logs : {};
+          state.updatedAt = parsed.updatedAt || Date.now();
+          ensureHabitCategoriesExist();
+          return true;
+        }
+      } catch (e) {
+        // Abaikan jika JSON korup
+      }
+      return false;
+    }
+
+    function updateSyncCodeLabels() {
+      const headerLabel = document.getElementById('headerSyncCodeLabel');
+      const modalInput = document.getElementById('syncRoomCodeInput');
+      const activeLabel = document.getElementById('activeRoomLabel');
+      if (headerLabel) headerLabel.textContent = syncRoomCode;
+      if (modalInput) modalInput.value = syncRoomCode;
+      if (activeLabel) activeLabel.textContent = syncRoomCode;
+    }
+
+    function updateSyncUI(status, detailText = '') {
+      const btnSync = document.getElementById('btnOpenSyncModal');
+      const dot = document.getElementById('syncStatusDot');
+      const text = document.getElementById('syncStatusText');
+      const textMobile = document.getElementById('syncStatusTextMobile');
+      const modalBox = document.getElementById('modalSyncStatusBox');
+      const modalDot = document.getElementById('modalSyncDot');
+      const modalHeadline = document.getElementById('modalSyncHeadline');
+      const modalDesc = document.getElementById('modalSyncDesc');
+
+      if (!btnSync) return;
+
+      if (status === 'synced') {
+        isCloudConnected = true;
+        btnSync.className = 'flex items-center gap-1.5 sm:gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 min-h-[38px] rounded-xl transition shadow-sm border border-emerald-500/50';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-300 shadow-[0_0_8px_#6ee7b7] shrink-0';
+        text.textContent = 'Cloud Tersinkron';
+        if (textMobile) textMobile.textContent = 'Cloud';
+        modalBox.className = 'p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-200 flex items-start gap-3';
+        modalDot.className = 'w-3 h-3 rounded-full bg-emerald-500 mt-1 shrink-0';
+        modalHeadline.textContent = `Cloud Tersinkron (${syncRoomCode})`;
+        modalDesc.textContent = detailText || 'Terhubung ke Cloud Firestore (ahemnajibproject). Data langsung tersinkronisasi real-time di seluruh perangkat Anda.';
+      } else if (status === 'saving') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-300 animate-ping shrink-0';
+        text.textContent = 'Menyimpan...';
+        if (textMobile) textMobile.textContent = 'Sync...';
+      } else if (status === 'fallback') {
+        isCloudConnected = false;
+        btnSync.className = 'flex items-center gap-1.5 sm:gap-2 bg-amber-700/90 hover:bg-amber-700 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3.5 py-2 min-h-[38px] rounded-xl transition shadow-sm border border-amber-500/40';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-300 shrink-0';
+        text.textContent = 'Mode Lokal';
+        if (textMobile) textMobile.textContent = 'Lokal';
+        modalBox.className = 'p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3';
+        modalDot.className = 'w-3 h-3 rounded-full bg-amber-500 mt-1 shrink-0';
+        modalHeadline.textContent = 'Mode Penyimpanan Lokal Aktif (Fallback)';
+        modalDesc.textContent = detailText || 'Koneksi Cloud sedang offline atau belum diotorisasi pada domain ini. Data tetap tersimpan otomatis di browser perangkat Anda.';
+      }
+    }
+
+    function getActiveFirestoreDocRef() {
+      if (!db || !currentUser || !firestoreDocFn) return null;
+      return firestoreDocFn(db, FIRESTORE_COLLECTION, syncRoomCode);
+    }
+
+    function attachFirestoreListener() {
+      if (!db || !currentUser || !firestoreOnSnapshotFn) return;
+
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+
+      const docRef = getActiveFirestoreDocRef();
+      if (!docRef) return;
+
+      unsubscribeSnapshot = firestoreOnSnapshotFn(
+        docRef,
+        (snap) => {
+          if (snap.exists()) {
+            const remoteData = snap.data();
+            if (remoteData && Array.isArray(remoteData.habits)) {
+              isApplyingRemoteUpdate = true;
+              state.categories = Array.isArray(remoteData.categories) && remoteData.categories.length > 0
+                ? remoteData.categories
+                : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+              state.habits = remoteData.habits;
+              state.logs = remoteData.logs && typeof remoteData.logs === 'object' ? remoteData.logs : {};
+              state.updatedAt = parsedTimestamp(remoteData.updatedAt);
+              ensureHabitCategoriesExist();
+              saveStateToLocalCache();
+              isApplyingRemoteUpdate = false;
+              renderAll();
+            }
+          } else {
+            persistStateToCloud(true);
+          }
+          updateSyncUI('synced');
+        },
+        (err) => {
+          let diagMsg = `Gagal terhubung ke Cloud Firestore (${err.code || err.message}). `;
+          if (err.code === 'permission-denied') {
+            diagMsg += 'Periksa Firestore Security Rules di Firebase Console agar mengizinkan akses koleksi "habit_tracker_workspaces". ';
+          }
+          diagMsg += 'Aplikasi otomatis beralih ke penyimpanan lokal browser.';
+          updateSyncUI('fallback', diagMsg);
+        }
+      );
+    }
+
+    function parsedTimestamp(val) {
+      return typeof val === 'number' && !isNaN(val) ? val : Date.now();
+    }
+
+    function persistStateToCloud(immediate = false) {
+      if (isApplyingRemoteUpdate) return;
+      state.updatedAt = Date.now();
+      saveStateToLocalCache();
+
+      if (!db || !currentUser || !firestoreSetDocFn) {
+        return;
+      }
+
+      if (isCloudConnected) {
+        updateSyncUI('saving');
+      }
+
+      const executeSave = async () => {
+        try {
+          if (!currentUser) return;
+          const docRef = getActiveFirestoreDocRef();
+          if (!docRef) return;
+
+          await firestoreSetDocFn(docRef, {
+            syncCode: syncRoomCode,
+            categories: state.categories,
+            habits: state.habits,
+            logs: state.logs,
+            updatedAt: state.updatedAt,
+            lastUpdatedByUid: currentUser.uid
+          }, { merge: true });
+
+          updateSyncUI('synced');
+        } catch (err) {
+          let diagMsg = `Gagal menyimpan ke Cloud Firestore (${err.code || err.message}). Data tetap tersimpan aman di penyimpanan lokal browser.`;
+          updateSyncUI('fallback', diagMsg);
+        }
+      };
+
+      if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+      if (immediate) {
+        executeSave();
+      } else {
+        saveDebounceTimer = setTimeout(executeSave, 300);
+      }
+    }
+
+    async function bootstrapFirebase() {
+      updateSyncCodeLabels();
+      loadStateFromLocalCache();
+      renderAll();
+
+      try {
+        const [appMod, authMod, fsMod] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
+          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js")
+        ]);
+
+        firebaseApp = appMod.initializeApp(firebaseConfig);
+        auth = authMod.getAuth(firebaseApp);
+        db = fsMod.getFirestore(firebaseApp);
+        firestoreDocFn = fsMod.doc;
+        firestoreSetDocFn = fsMod.setDoc;
+        firestoreOnSnapshotFn = fsMod.onSnapshot;
+
+        const userCred = await authMod.signInAnonymously(auth);
+        currentUser = userCred.user;
+
+        if (currentUser) {
+          const uidField = document.getElementById('displayFullUserId');
+          if (uidField) uidField.value = currentUser.uid;
+          attachFirestoreListener();
+        }
+      } catch (err) {
+        const uidField = document.getElementById('displayFullUserId');
+        if (uidField) uidField.value = 'Offline / Mode Lokal';
+        let diagMsg = `Koneksi Cloud (${err.code || err.message}). Data tersimpan otomatis di penyimpanan lokal browser perangkat ini.`;
+        updateSyncUI('fallback', diagMsg);
+      }
+    }
+
+    /* ==========================================================================
+       5. FUNGSI PERHITUNGAN & ANALITIK DATA
+       ========================================================================== */
+    function getMonthConfig(monthId) {
+      return MONTHS_CONFIG.find(m => m.id === monthId) || MONTHS_CONFIG[0];
+    }
+
+    function getCategoryStyle(categoryName) {
+      const cat = state.categories.find(c => c.name === categoryName);
+      const colorKey = cat ? cat.color : 'slate';
+      return CATEGORY_BADGE_STYLES[colorKey] || CATEGORY_BADGE_STYLES.slate;
+    }
+
+    function isHabitChecked(monthId, habitId, day) {
+      return Boolean(state.logs?.[monthId]?.[habitId]?.[String(day)]);
+    }
+
+    function calculateMonthStats(monthId) {
+      const monthCfg = getMonthConfig(monthId);
+      const daysInMonth = monthCfg.days;
+      const habits = state.habits;
+      const activeHabitsCount = habits.length;
+
+      let totalCheckins = 0;
+      let totalTarget = 0;
+      const dailyCounts = new Array(daysInMonth + 1).fill(0);
+
+      const habitStats = habits.map((habit, index) => {
+        const target = Math.max(1, Number(habit.target) || 1);
+        let done = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+          if (isHabitChecked(monthId, habit.id, d)) {
+            done++;
+            dailyCounts[d]++;
+          }
+        }
+        totalCheckins += done;
+        totalTarget += target;
+        const remaining = Math.max(0, target - done);
+        const pct = Math.round((done / target) * 1000) / 10;
+
+        return {
+          index: index + 1,
+          id: habit.id,
+          title: habit.title,
+          category: habit.category,
+          target,
+          done,
+          remaining,
+          pct
+        };
+      });
+
+      const avgCompletion = activeHabitsCount > 0
+        ? Math.round((habitStats.reduce((acc, h) => acc + Math.min(100, h.pct), 0) / activeHabitsCount) * 10) / 10
+        : 0;
+
+      let bestHabit = null;
+      if (totalCheckins > 0 && habitStats.length > 0) {
+        bestHabit = [...habitStats].sort((a, b) => {
+          if (b.pct !== a.pct) return b.pct - a.pct;
+          return b.done - a.done;
+        })[0];
+      }
+
+      let bestDay = null;
+      let bestDayCount = 0;
+      if (totalCheckins > 0 && activeHabitsCount > 0) {
+        for (let d = 1; d <= daysInMonth; d++) {
+          if (dailyCounts[d] > bestDayCount) {
+            bestDayCount = dailyCounts[d];
+            bestDay = d;
+          }
+        }
+      }
+      const bestDayPct = (bestDay && activeHabitsCount > 0)
+        ? Math.round((bestDayCount / activeHabitsCount) * 100)
+        : 0;
+
+      const overallTargetPct = totalTarget > 0
+        ? Math.round((totalCheckins / totalTarget) * 1000) / 10
+        : 0;
+
+      return {
+        monthCfg,
+        daysInMonth,
+        activeHabitsCount,
+        totalCheckins,
+        totalTarget,
+        avgCompletion,
+        overallTargetPct,
+        habitStats,
+        dailyCounts,
+        bestHabit,
+        bestDay,
+        bestDayCount,
+        bestDayPct
+      };
+    }
+
+    /* ==========================================================================
+       6. RENDERING UI: HEADER, DASHBOARD, TRACKER (CARDS & MATRIX), PENGATURAN
+       ========================================================================== */
+    function populateSelectors() {
+      const monthIndex = MONTHS_CONFIG.findIndex(m => m.id === state.selectedMonth);
+      const prevBtn = document.getElementById('btnHeaderPrevMonth');
+      const nextBtn = document.getElementById('btnHeaderNextMonth');
+      if (prevBtn) prevBtn.disabled = monthIndex <= 0;
+      if (nextBtn) nextBtn.disabled = monthIndex >= MONTHS_CONFIG.length - 1;
+
+      const monthOptionsHtml = MONTHS_CONFIG.map(m =>
+        `<option value="${m.id}" ${m.id === state.selectedMonth ? 'selected' : ''} class="bg-slate-900 text-white">${m.label}</option>`
+      ).join('');
+
+      const monthSelEl = document.getElementById('monthSelector');
+      monthSelEl.innerHTML = monthOptionsHtml;
+      monthSelEl.value = state.selectedMonth;
+
+      const maintenanceMonthEl = document.getElementById('settingsMaintenanceMonthLabel');
+      if (maintenanceMonthEl) {
+        maintenanceMonthEl.textContent = getMonthConfig(state.selectedMonth).fullName;
+      }
+
+      const filterSel = document.getElementById('trackerCategoryFilter');
+      const currentFilter = state.categoryFilter;
+      filterSel.innerHTML = `<option value="ALL">Semua</option>` +
+        state.categories.map(c =>
+          `<option value="${escapeHtml(c.name)}" ${c.name === currentFilter ? 'selected' : ''}>${escapeHtml(c.name)}</option>`
+        ).join('');
+
+      const catOptions = state.categories.map(c =>
+        `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`
+      ).join('');
+
+      const settingsCatSel = document.getElementById('newHabitCategory');
+      const quickCatSel = document.getElementById('quickHabitCategory');
+      if (settingsCatSel) settingsCatSel.innerHTML = catOptions;
+      if (quickCatSel) quickCatSel.innerHTML = catOptions;
+    }
+
+    function renderDashboard() {
+      const stats = calculateMonthStats(state.selectedMonth);
+      const { monthCfg, daysInMonth, activeHabitsCount, totalCheckins, totalTarget, avgCompletion, habitStats, bestHabit, bestDay, bestDayCount, bestDayPct } = stats;
+
+      document.getElementById('dashBadgePeriod').textContent = monthCfg.fullName;
+      document.getElementById('dashDaysInfo').textContent = `${daysInMonth} Hari Kalender`;
+
+      const uniqueCats = new Set(state.habits.map(h => h.category)).size;
+
+      document.getElementById('kpiTotalHabits').textContent = activeHabitsCount;
+      document.getElementById('kpiTotalHabitsSub').textContent = `Di ${uniqueCats} kategori aktif`;
+
+      document.getElementById('kpiAvgCompletion').textContent = `${avgCompletion}%`;
+      document.getElementById('kpiAvgProgressBar').style.width = `${Math.min(100, avgCompletion)}%`;
+
+      document.getElementById('kpiTotalCheckins').textContent = totalCheckins;
+      document.getElementById('kpiTotalCheckinsSub').textContent = `Dari ${totalTarget} target`;
+
+      if (bestHabit) {
+        document.getElementById('kpiBestHabitName').textContent = bestHabit.title;
+        document.getElementById('kpiBestHabitName').title = bestHabit.title;
+        document.getElementById('kpiBestHabitSub').textContent = `${bestHabit.pct}% (${bestHabit.done}/${bestHabit.target} hr)`;
+      } else {
+        document.getElementById('kpiBestHabitName').textContent = 'Belum Ada Data';
+        document.getElementById('kpiBestHabitName').title = 'Belum Ada Data';
+        document.getElementById('kpiBestHabitSub').textContent = 'Mulai centang habit';
+      }
+
+      if (bestDay) {
+        document.getElementById('kpiMostConsistentDay').textContent = `Tgl ${bestDay} ${monthCfg.label}`;
+        document.getElementById('kpiMostConsistentSub').textContent = `${bestDayCount}/${activeHabitsCount} habit (${bestDayPct}%)`;
+      } else {
+        document.getElementById('kpiMostConsistentDay').textContent = 'Belum Ada Data';
+        document.getElementById('kpiMostConsistentSub').textContent = '0% penyelesaian harian';
+      }
+
+      // Ringkasan Progres per Kebiasaan (Mobile Cards + Desktop Table)
+      document.getElementById('dashHabitTableCount').textContent = `${activeHabitsCount} Habit`;
+      const tbody = document.getElementById('dashHabitSummaryBody');
+      const mobileCards = document.getElementById('dashHabitMobileCards');
+
+      if (habitStats.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-8 text-center text-sm text-slate-500">
+              Belum ada kebiasaan yang terdaftar. Silakan tambah kebiasaan baru di tab <strong>Pengaturan</strong>.
+            </td>
+          </tr>
+        `;
+        mobileCards.innerHTML = `
+          <div class="p-6 text-center text-xs text-slate-500">
+            Belum ada kebiasaan terdaftar. Ketuk tombol <strong>+ Habit</strong> di bawah untuk menambahkan.
+          </div>
+        `;
+      } else {
+        mobileCards.innerHTML = habitStats.map(h => {
+          const barWidth = Math.min(100, h.pct);
+          const barColor = h.pct >= 80 ? 'bg-emerald-500' : h.pct >= 50 ? 'bg-[#006a61]' : h.pct > 0 ? 'bg-amber-500' : 'bg-slate-300';
+          const pctTextColor = h.pct >= 80 ? 'text-emerald-700' : h.pct >= 50 ? 'text-[#006a61]' : 'text-slate-600';
+
+          return `
+            <div class="p-4 space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-400">#${h.index}</span>
+                    <h4 class="text-sm font-bold text-[#0f172a] truncate">${escapeHtml(h.title)}</h4>
+                  </div>
+                  <div class="mt-1 flex items-center gap-2">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${getCategoryStyle(h.category)}">
+                      ${escapeHtml(h.category)}
+                    </span>
+                    <span class="text-[11px] text-slate-500">${h.done}/${h.target} hari</span>
+                  </div>
+                </div>
+                <span class="text-sm font-extrabold ${pctTextColor} shrink-0">${h.pct}%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="${barColor} h-2 rounded-full transition-all duration-300" style="width: ${barWidth}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        tbody.innerHTML = habitStats.map(h => {
+          const barWidth = Math.min(100, h.pct);
+          const barColor = h.pct >= 80 ? 'bg-emerald-500' : h.pct >= 50 ? 'bg-[#006a61]' : h.pct > 0 ? 'bg-amber-500' : 'bg-slate-300';
+          const pctTextColor = h.pct >= 80 ? 'text-emerald-700' : h.pct >= 50 ? 'text-[#006a61]' : 'text-slate-600';
+
+          return `
+            <tr class="hover:bg-teal-50/30 transition">
+              <td class="py-3 px-4 text-center font-semibold text-slate-500">${h.index}</td>
+              <td class="py-3 px-4 font-semibold text-[#0f172a]">${escapeHtml(h.title)}</td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryStyle(h.category)}">
+                  ${escapeHtml(h.category)}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center font-medium text-slate-700">${h.target} hari</td>
+              <td class="py-3 px-4 text-center font-bold text-[#006a61]">${h.done} hari</td>
+              <td class="py-3 px-4 text-center text-slate-500">${h.remaining} hari</td>
+              <td class="py-3 px-4 text-center font-extrabold ${pctTextColor}">${h.pct}%</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200/60">
+                    <div class="${barColor} h-2.5 rounded-full transition-all duration-300" style="width: ${barWidth}%"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Render Multi-Month Overview Table (13 Bulan: Des 2026 - Des 2027)
+      const multiBody = document.getElementById('multiMonthTableBody');
+      const allMonthsStats = MONTHS_CONFIG.map(m => calculateMonthStats(m.id));
+
+      multiBody.innerHTML = allMonthsStats.map(ms => {
+        const isCurrent = ms.monthCfg.id === state.selectedMonth;
+        let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 whitespace-nowrap">Belum Mulai</span>';
+        if (ms.totalCheckins > 0) {
+          if (ms.avgCompletion >= 80) {
+            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 whitespace-nowrap">Konsisten</span>';
+          } else if (ms.avgCompletion >= 50) {
+            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-100 text-[#006a61] whitespace-nowrap">Baik</span>';
+          } else {
+            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 whitespace-nowrap">Perlu Fokus</span>';
+          }
+        }
+
+        return `
+          <tr onclick="window.selectMonthPeriod('${ms.monthCfg.id}')" class="cursor-pointer transition ${isCurrent ? 'bg-teal-50/70 font-semibold' : 'hover:bg-slate-50'}">
+            <td class="py-3 px-3 sm:px-4 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${isCurrent ? 'bg-[#006a61]' : 'bg-slate-300'} shrink-0"></span>
+                <span class="text-[#0f172a] sm:hidden">${ms.monthCfg.label}</span>
+                <span class="text-[#0f172a] hidden sm:inline">${ms.monthCfg.fullName}</span>
+                ${isCurrent ? '<span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#006a61] text-white">Aktif</span>' : ''}
+              </div>
+            </td>
+            <td class="py-3 px-2.5 sm:px-4 text-center text-slate-600">${ms.totalTarget}</td>
+            <td class="py-3 px-2.5 sm:px-4 text-center font-bold text-[#006a61]">${ms.totalCheckins}</td>
+            <td class="py-3 px-2.5 sm:px-4 text-center font-bold text-slate-800">${ms.avgCompletion}%</td>
+            <td class="py-3 px-3 sm:px-4 text-center">${statusBadge}</td>
+            <td class="py-3 px-4 text-xs text-slate-600 hidden sm:table-cell">${ms.bestHabit ? `${escapeHtml(ms.bestHabit.title)} (${ms.bestHabit.pct}%)` : '-'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      renderCharts(stats, allMonthsStats);
+    }
+
+    function renderCharts(currentStats, allMonthsStats) {
+      if (typeof Chart === 'undefined') return;
+
+      const isMobile = window.innerWidth < 640;
+      const hContainer = document.getElementById('horizontalChartContainer');
+      const dynamicHeight = Math.max(300, currentStats.habitStats.length * (isMobile ? 28 : 32));
+      if (hContainer) hContainer.style.height = `${dynamicHeight}px`;
+
+      // 1. Grafik Batang Horizontal
+      const barCanvas = document.getElementById('habitBarChart');
+      if (barCanvas) {
+        const ctxBar = barCanvas.getContext('2d');
+        const maxLabelLen = isMobile ? 18 : 28;
+        const habitLabels = currentStats.habitStats.map(h =>
+          h.title.length > maxLabelLen ? h.title.slice(0, maxLabelLen - 1) + '…' : h.title
+        );
+        const habitPcts = currentStats.habitStats.map(h => h.pct);
+
+        if (habitBarChartInstance) habitBarChartInstance.destroy();
+        habitBarChartInstance = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: habitLabels,
+            datasets: [{
+              label: 'Pencapaian (%)',
+              data: habitPcts,
+              backgroundColor: habitPcts.map(v => v >= 80 ? '#10b981' : v >= 50 ? '#006a61' : '#38bdf8'),
+              borderRadius: 6,
+              barThickness: isMobile ? 14 : 18
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => ` Pencapaian: ${ctx.parsed.x}%`
+                }
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: '#f1f5f9' },
+                ticks: {
+                  callback: (val) => val + '%',
+                  font: { size: isMobile ? 10 : 11 }
+                }
+              },
+              y: {
+                grid: { display: false },
+                ticks: { font: { size: isMobile ? 10 : 11, weight: '500' }, color: '#334155' }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Grafik Garis / Area: Tren Konsistensi & Check-in Harian
+      const trendCanvas = document.getElementById('dailyTrendChart');
+      if (trendCanvas) {
+        const ctxTrend = trendCanvas.getContext('2d');
+        const dayLabels = [];
+        const dayValues = [];
+        for (let d = 1; d <= currentStats.daysInMonth; d++) {
+          dayLabels.push(isMobile ? `${d}` : `Tgl ${d}`);
+          dayValues.push(currentStats.dailyCounts[d]);
+        }
+
+        if (dailyTrendChartInstance) dailyTrendChartInstance.destroy();
+        dailyTrendChartInstance = new Chart(ctxTrend, {
+          type: 'line',
+          data: {
+            labels: dayLabels,
+            datasets: [{
+              label: 'Kebiasaan Selesai',
+              data: dayValues,
+              borderColor: '#006a61',
+              backgroundColor: 'rgba(0, 106, 97, 0.14)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#006a61',
+              pointRadius: isMobile ? 2 : 3,
+              pointHoverRadius: 5,
+              fill: true,
+              tension: 0.32
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: (items) => `Tanggal ${items[0].label.replace('Tgl ', '')}`,
+                  label: (ctx) => ` Selesai: ${ctx.parsed.y} dari ${currentStats.activeHabitsCount} kebiasaan`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: isMobile ? 8 : 11, font: { size: 10 } }
+              },
+              y: {
+                beginAtZero: true,
+                suggestedMax: Math.max(5, currentStats.activeHabitsCount),
+                grid: { color: '#f1f5f9' },
+                ticks: { stepSize: 2, font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Grafik Multi-Bulan (Des 2026 - Des 2027)
+      const multiCanvas = document.getElementById('multiMonthChart');
+      if (multiCanvas) {
+        const ctxMulti = multiCanvas.getContext('2d');
+        const multiLabels = allMonthsStats.map(m => isMobile ? m.monthCfg.label.split(' ')[0] : m.monthCfg.label);
+        const multiValues = allMonthsStats.map(m => m.avgCompletion);
+
+        if (multiMonthChartInstance) multiMonthChartInstance.destroy();
+        multiMonthChartInstance = new Chart(ctxMulti, {
+          type: 'bar',
+          data: {
+            labels: multiLabels,
+            datasets: [{
+              label: 'Rata-rata Pencapaian (%)',
+              data: multiValues,
+              backgroundColor: allMonthsStats.map(m =>
+                m.monthCfg.id === state.selectedMonth ? '#006a61' : '#99f6e4'
+              ),
+              borderColor: '#006a61',
+              borderWidth: 1,
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: (items) => allMonthsStats[items[0].dataIndex].monthCfg.fullName,
+                  label: (ctx) => ` Rata-rata Pencapaian: ${ctx.parsed.y}%`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { maxRotation: 0, font: { size: isMobile ? 10 : 11, weight: '600' } }
+              },
+              y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: '#e2e8f0' },
+                ticks: { callback: (v) => v + '%', font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateTrackerViewModeUI() {
+      const btnCards = document.getElementById('btnViewModeCards');
+      const btnMatrix = document.getElementById('btnViewModeMatrix');
+      const viewCards = document.getElementById('trackerCardsView');
+      const viewMatrix = document.getElementById('trackerMatrixView');
+      if (!btnCards || !btnMatrix || !viewCards || !viewMatrix) return;
+
+      if (state.trackerViewMode === 'cards') {
+        btnCards.className = 'flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold rounded-lg bg-white text-[#006a61] shadow-sm transition';
+        btnMatrix.className = 'flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition';
+        viewCards.classList.remove('hidden');
+        viewMatrix.classList.add('hidden');
+      } else {
+        btnMatrix.className = 'flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold rounded-lg bg-white text-[#006a61] shadow-sm transition';
+        btnCards.className = 'flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition';
+        viewMatrix.classList.remove('hidden');
+        viewCards.classList.add('hidden');
+      }
+    }
+
+    function renderDailyFocusCards(monthCfg, filteredHabits) {
+      const daysInMonth = monthCfg.days;
+      if (state.selectedDay > daysInMonth) state.selectedDay = daysInMonth;
+      if (state.selectedDay < 1) state.selectedDay = 1;
+
+      const selectedDay = state.selectedDay;
+      const btnPrev = document.getElementById('btnPrevDay');
+      const btnNext = document.getElementById('btnNextDay');
+      if (btnPrev) btnPrev.disabled = selectedDay <= 1;
+      if (btnNext) btnNext.disabled = selectedDay >= daysInMonth;
+
+      const dayStrip = document.getElementById('mobileDayStrip');
+
+      let stripHtml = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(monthCfg.year, monthCfg.monthIndex, d);
+        const dayShort = DAY_NAMES_ID[dateObj.getDay()];
+        const isSelected = d === selectedDay;
+
+        let doneOnDay = 0;
+        filteredHabits.forEach(h => {
+          if (isHabitChecked(state.selectedMonth, h.id, d)) doneOnDay++;
+        });
+        const totalOnDay = filteredHabits.length;
+
+        let dotClass = 'bg-slate-200';
+        if (totalOnDay > 0 && doneOnDay === totalOnDay) {
+          dotClass = isSelected ? 'bg-emerald-300' : 'bg-emerald-500';
+        } else if (doneOnDay > 0) {
+          dotClass = isSelected ? 'bg-amber-300' : 'bg-[#006a61]';
+        }
+
+        stripHtml += `
+          <button
+            type="button"
+            data-day-pill="${d}"
+            onclick="window.selectTrackerDay(${d})"
+            class="min-w-[50px] h-[64px] rounded-2xl flex flex-col items-center justify-center gap-0.5 border transition shrink-0 active:scale-95 ${
+              isSelected
+                ? 'bg-[#006a61] text-white border-[#006a61] shadow-md'
+                : 'bg-slate-50 hover:bg-teal-50/60 text-slate-700 border-slate-200/80'
+            }">
+            <span class="text-[10px] font-medium ${isSelected ? 'text-teal-100' : 'text-slate-400'}">${dayShort}</span>
+            <span class="text-sm font-extrabold leading-tight">${d}</span>
+            <span class="w-1.5 h-1.5 rounded-full mt-0.5 ${dotClass}"></span>
+          </button>
+        `;
+      }
+      dayStrip.innerHTML = stripHtml;
+
+      if (shouldCenterDayPill) {
+        shouldCenterDayPill = false;
+        requestAnimationFrame(() => {
+          const activePill = dayStrip.querySelector(`[data-day-pill="${selectedDay}"]`);
+          if (activePill) {
+            const targetScrollLeft = activePill.offsetLeft - (dayStrip.clientWidth / 2) + (activePill.offsetWidth / 2);
+            dayStrip.scrollTo({ left: Math.max(0, targetScrollLeft), behavior: 'smooth' });
+          }
+        });
+      }
+
+      const selDateObj = new Date(monthCfg.year, monthCfg.monthIndex, selectedDay);
+      const fullDayName = DAY_FULL_NAMES_ID[selDateObj.getDay()];
+      document.getElementById('dailyFocusDateTitle').textContent = `${fullDayName}, ${selectedDay} ${monthCfg.fullName}`;
+
+      let checkedTodayCount = 0;
+      filteredHabits.forEach(h => {
+        if (isHabitChecked(state.selectedMonth, h.id, selectedDay)) checkedTodayCount++;
+      });
+      const totalTodayCount = filteredHabits.length;
+      const todayPct = totalTodayCount > 0 ? Math.round((checkedTodayCount / totalTodayCount) * 100) : 0;
+
+      document.getElementById('dailyFocusSubtitle').textContent = `${checkedTodayCount} dari ${totalTodayCount} kebiasaan selesai (${todayPct}%)`;
+      document.getElementById('dailyFocusProgressBar').style.width = `${todayPct}%`;
+
+      const toggleAllBtn = document.getElementById('btnToggleAllSelectedDay');
+      if (totalTodayCount > 0 && checkedTodayCount === totalTodayCount) {
+        toggleAllBtn.textContent = 'Batalkan Semua';
+      } else {
+        toggleAllBtn.textContent = 'Centang Semua';
+      }
+
+      const listContainer = document.getElementById('dailyFocusHabitList');
+      if (filteredHabits.length === 0) {
+        listContainer.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl p-8 text-center text-sm text-slate-500 border border-slate-200/80">
+            Tidak ada kebiasaan pada kategori ini. Ketuk <strong>+ Habit Baru</strong> atau ubah filter kategori.
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = filteredHabits.map((habit) => {
+        const isDoneToday = isHabitChecked(state.selectedMonth, habit.id, selectedDay);
+        const target = Math.max(1, Number(habit.target) || 1);
+        let monthDone = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+          if (isHabitChecked(state.selectedMonth, habit.id, d)) monthDone++;
+        }
+        const monthPct = Math.round((monthDone / target) * 100);
+        const barWidth = Math.min(100, monthPct);
+
+        return `
+          <div
+            role="button"
+            tabindex="0"
+            onclick="window.toggleHabitDay('${habit.id}', ${selectedDay})"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.toggleHabitDay('${habit.id}', ${selectedDay});}"
+            class="cursor-pointer select-none rounded-2xl p-4 border transition active:scale-[0.99] flex items-center gap-3.5 shadow-sm ${
+              isDoneToday
+                ? 'bg-emerald-50/70 border-emerald-400/80'
+                : 'bg-white border-slate-200/90 hover:border-[#006a61]/40'
+            }">
+            <div class="w-7 h-7 rounded-xl border-2 flex items-center justify-center shrink-0 transition ${
+              isDoneToday
+                ? 'bg-[#006a61] border-[#006a61] text-white shadow-sm'
+                : 'bg-white border-slate-300 text-transparent'
+            }">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="text-sm sm:text-base font-bold leading-snug ${isDoneToday ? 'text-emerald-950 line-through decoration-emerald-600/50' : 'text-[#0f172a]'}">
+                  ${escapeHtml(habit.title)}
+                </h4>
+                <span class="text-xs font-extrabold shrink-0 ${monthPct >= 100 ? 'text-emerald-700' : 'text-[#006a61]'}">
+                  ${monthDone}/${target} hr
+                </span>
+              </div>
+
+              <div class="mt-2 flex items-center justify-between gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${getCategoryStyle(habit.category)}">
+                  ${escapeHtml(habit.category)}
+                </span>
+                <div class="flex items-center gap-2 flex-1 max-w-[130px]">
+                  <div class="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-[#006a61] h-1.5 rounded-full transition-all duration-300" style="width: ${barWidth}%"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-slate-500 w-9 text-right">${monthPct}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTracker() {
+      const monthCfg = getMonthConfig(state.selectedMonth);
+      const daysInMonth = monthCfg.days;
+      const matrixScrollEl = document.getElementById('trackerMatrixScroll');
+      const prevScrollLeft = matrixScrollEl ? matrixScrollEl.scrollLeft : 0;
+      const prevScrollTop = matrixScrollEl ? matrixScrollEl.scrollTop : 0;
+
+      document.getElementById('trackerHeadingMonth').textContent = `Checklist — ${monthCfg.fullName}`;
+      document.getElementById('trackerDaysBadge').textContent = `${daysInMonth} Hari`;
+
+      const filteredHabits = state.categoryFilter === 'ALL'
+        ? state.habits
+        : state.habits.filter(h => h.category === state.categoryFilter);
+
+      updateTrackerViewModeUI();
+      renderDailyFocusCards(monthCfg, filteredHabits);
+
+      // 1. Render Header Tabel Matrix (Sticky kiri aktif mulai md:, sticky kanan aktif mulai lg:)
+      const thead = document.getElementById('trackerTableHead');
+      let dayHeadersHtml = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(monthCfg.year, monthCfg.monthIndex, d);
+        const dayName = DAY_NAMES_ID[dateObj.getDay()];
+        const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+
+        dayHeadersHtml += `
+          <th class="py-2 px-1 w-[40px] min-w-[40px] text-center border-l border-slate-200/80 ${isWeekend ? 'bg-amber-50 text-amber-900' : 'bg-slate-50 text-slate-600'}">
+            <div class="text-[10px] font-medium opacity-75">${dayName}</div>
+            <div class="text-xs font-bold">${d}</div>
+          </th>
+        `;
+      }
+
+      thead.innerHTML = `
+        <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50">
+          <th class="py-3 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center md:sticky md:left-0 md:z-30 bg-slate-100 border-r border-slate-200">No</th>
+          <th class="py-3 px-3.5 w-[185px] min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] text-left md:sticky md:left-[42px] md:z-30 bg-slate-100 border-r border-slate-200 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Nama Kebiasaan</th>
+          <th class="py-3 px-3 min-w-[155px] text-left bg-slate-50 border-r border-slate-200">Kategori</th>
+          <th class="py-3 px-2.5 w-[76px] min-w-[76px] text-center bg-slate-50">Target</th>
+          ${dayHeadersHtml}
+          <th class="py-3 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center bg-teal-50 text-[#006a61] border-l-2 border-slate-200 lg:sticky lg:right-[176px] lg:z-30">Tercapai</th>
+          <th class="py-3 px-2 w-[80px] min-w-[80px] max-w-[80px] text-center bg-slate-100 text-slate-600 border-l border-slate-200 lg:sticky lg:right-[96px] lg:z-30">Sisa</th>
+          <th class="py-3 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center bg-emerald-50 text-emerald-800 border-l border-slate-200 lg:sticky lg:right-0 lg:z-30">% Capai</th>
+        </tr>
+      `;
+
+      // 2. Render Body Tabel Matrix
+      const tbody = document.getElementById('trackerTableBody');
+      const dailyTotals = new Array(daysInMonth + 1).fill(0);
+
+      if (filteredHabits.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${daysInMonth + 7}" class="py-10 text-center text-sm text-slate-500">
+              Tidak ada kebiasaan pada filter kategori ini. Klik <strong>+ Habit Baru</strong> atau ubah filter kategori.
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = filteredHabits.map((habit) => {
+          const globalIndex = state.habits.findIndex(h => h.id === habit.id) + 1;
+          const target = Math.max(1, Number(habit.target) || 1);
+          let rowDone = 0;
+
+          let dayCellsHtml = '';
+          for (let d = 1; d <= daysInMonth; d++) {
+            const checked = isHabitChecked(state.selectedMonth, habit.id, d);
+            if (checked) {
+              rowDone++;
+              dailyTotals[d]++;
+            }
+            const dateObj = new Date(monthCfg.year, monthCfg.monthIndex, d);
+            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+
+            dayCellsHtml += `
+              <td class="p-0 text-center border-l border-slate-100 ${isWeekend ? 'bg-amber-50/40' : ''}">
+                <label class="flex items-center justify-center w-full h-[40px] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    class="habit-checkbox"
+                    ${checked ? 'checked' : ''}
+                    aria-label="${escapeHtml(habit.title)} tanggal ${d}"
+                    onchange="window.toggleHabitDay('${habit.id}', ${d})"
+                  />
+                </label>
+              </td>
+            `;
+          }
+
+          const sisa = Math.max(0, target - rowDone);
+          const pct = Math.round((rowDone / target) * 1000) / 10;
+          const pctBadge = pct >= 100
+            ? 'bg-emerald-100 text-emerald-800'
+            : pct >= 50
+              ? 'bg-teal-100 text-[#006a61]'
+              : 'bg-slate-100 text-slate-700';
+
+          return `
+            <tr class="group hover:bg-teal-50/20 transition">
+              <td class="py-2 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center font-semibold text-slate-500 md:sticky md:left-0 md:z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200">
+                ${globalIndex}
+              </td>
+              <td class="py-2 px-3.5 w-[185px] min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] font-semibold text-[#0f172a] md:sticky md:left-[42px] md:z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+                <div class="truncate max-w-[165px] lg:max-w-[215px]" title="${escapeHtml(habit.title)}">${escapeHtml(habit.title)}</div>
+              </td>
+              <td class="py-2 px-2.5 border-r border-slate-200">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${getCategoryStyle(habit.category)}">
+                  ${escapeHtml(habit.category)}
+                </span>
+              </td>
+              <td class="py-2 px-2 w-[76px] min-w-[76px] text-center font-semibold text-slate-700">
+                ${target}
+              </td>
+              ${dayCellsHtml}
+              <td class="py-2 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center font-extrabold text-[#006a61] bg-teal-50 border-l-2 border-slate-200 lg:sticky lg:right-[176px] lg:z-20">
+                ${rowDone}
+              </td>
+              <td class="py-2 px-2 w-[80px] min-w-[80px] max-w-[80px] text-center font-medium text-slate-500 bg-white group-hover:bg-teal-50 border-l border-slate-200 lg:sticky lg:right-[96px] lg:z-20">
+                ${sisa}
+              </td>
+              <td class="py-2 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center bg-white group-hover:bg-teal-50 border-l border-slate-200 lg:sticky lg:right-0 lg:z-20">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold ${pctBadge}">
+                  ${pct}%
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 3. Render Footer Tabel Matrix
+      const tfoot = document.getElementById('trackerTableFoot');
+      const denom = filteredHabits.length;
+
+      let totalRowCells = '';
+      let pctRowCells = '';
+      let grandDone = 0;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const count = dailyTotals[d];
+        grandDone += count;
+        const dayPct = denom > 0 ? Math.round((count / denom) * 100) : 0;
+
+        totalRowCells += `<td class="py-2.5 px-1 text-center border-l border-slate-200 text-[#0f172a]">${count}</td>`;
+        pctRowCells += `<td class="py-2.5 px-1 text-center border-l border-slate-200 ${dayPct >= 80 ? 'text-emerald-700 font-bold' : 'text-slate-600'}">${dayPct}%</td>`;
+      }
+
+      const totalFilteredTarget = filteredHabits.reduce((acc, h) => acc + (Number(h.target) || 1), 0);
+      const overallPct = totalFilteredTarget > 0 ? Math.round((grandDone / totalFilteredTarget) * 1000) / 10 : 0;
+
+      tfoot.innerHTML = `
+        <tr class="bg-slate-100 border-b border-slate-200">
+          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#0f172a] md:sticky md:left-0 md:z-20 bg-slate-100 border-r border-slate-200">
+            Total Selesai Harian
+          </td>
+          <td class="py-2.5 px-3 text-slate-500 border-r border-slate-200">—</td>
+          <td class="py-2.5 px-2 text-center font-bold text-slate-700">${totalFilteredTarget}</td>
+          ${totalRowCells}
+          <td class="py-2.5 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center font-extrabold text-[#006a61] bg-teal-100 border-l-2 border-slate-300 lg:sticky lg:right-[176px] lg:z-20">${grandDone}</td>
+          <td class="py-2.5 px-2 w-[80px] min-w-[80px] max-w-[80px] text-center text-slate-600 bg-slate-100 border-l border-slate-200 lg:sticky lg:right-[96px] lg:z-20">${Math.max(0, totalFilteredTarget - grandDone)}</td>
+          <td class="py-2.5 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center font-extrabold text-emerald-800 bg-emerald-100 border-l border-slate-200 lg:sticky lg:right-0 lg:z-20">${overallPct}%</td>
+        </tr>
+        <tr class="bg-emerald-50">
+          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#006a61] md:sticky md:left-0 md:z-20 bg-emerald-50 border-r border-slate-200">
+            Tingkat Penyelesaian (%)
+          </td>
+          <td class="py-2.5 px-3 text-slate-500 border-r border-slate-200">Dari ${denom} habit</td>
+          <td class="py-2.5 px-2 text-center text-slate-500">100%</td>
+          ${pctRowCells}
+          <td colspan="3" class="py-2.5 px-3 min-w-[272px] text-center text-xs font-semibold text-[#006a61] bg-emerald-50 border-l-2 border-slate-200 lg:sticky lg:right-0 lg:z-20">
+            Otomatis Tersinkron
+          </td>
+        </tr>
+      `;
+
+      if (matrixScrollEl) {
+        matrixScrollEl.scrollLeft = prevScrollLeft;
+        matrixScrollEl.scrollTop = prevScrollTop;
+      }
+    }
+
+    function renderSettings() {
+      const tbody = document.getElementById('settingsHabitTableBody');
+      const mobileCards = document.getElementById('settingsHabitMobileCards');
+
+      if (state.habits.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-sm text-slate-500">
+              Daftar kebiasaan kosong. Tambahkan kebiasaan baru menggunakan formulir di atas.
+            </td>
+          </tr>
+        `;
+        mobileCards.innerHTML = `
+          <div class="p-6 text-center text-xs text-slate-500">
+            Daftar kebiasaan kosong. Tambahkan kebiasaan baru menggunakan formulir di atas.
+          </div>
+        `;
+      } else {
+        mobileCards.innerHTML = state.habits.map((habit, idx) => {
+          const catOptions = state.categories.map(c =>
+            `<option value="${escapeHtml(c.name)}" ${c.name === habit.category ? 'selected' : ''}>${escapeHtml(c.name)}</option>`
+          ).join('');
+
+          return `
+            <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">#${idx + 1}</span>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="window.moveHabit(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} aria-label="Geser ke atas" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center disabled:opacity-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+                  </button>
+                  <button type="button" onclick="window.moveHabit(${idx}, 1)" ${idx === state.habits.length - 1 ? 'disabled' : ''} aria-label="Geser ke bawah" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center disabled:opacity-30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  <button type="button" onclick="window.deleteHabit('${habit.id}')" aria-label="Hapus kebiasaan" class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Judul Kebiasaan</label>
+                <input
+                  type="text"
+                  value="${escapeHtml(habit.title)}"
+                  onchange="window.updateHabitField('${habit.id}', 'title', this.value)"
+                  class="w-full px-3.5 py-2.5 text-base sm:text-sm font-semibold text-[#0f172a] bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#006a61] rounded-xl focus:outline-none"
+                />
+              </div>
+
+              <div class="grid grid-cols-12 gap-2.5 items-end">
+                <div class="col-span-6">
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategori</label>
+                  <select
+                    onchange="window.updateHabitField('${habit.id}', 'category', this.value)"
+                    class="w-full px-2.5 py-2.5 min-h-[42px] text-xs font-semibold rounded-xl border cursor-pointer focus:outline-none ${getCategoryStyle(habit.category)}">
+                    ${catOptions}
+                  </select>
+                </div>
+                <div class="col-span-6">
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">Target / Bln</label>
+                  <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                    <button type="button" onclick="window.updateHabitField('${habit.id}', 'target', ${Math.max(1, Number(habit.target) - 1)})" class="w-10 h-[40px] font-bold text-slate-600 hover:bg-slate-200 shrink-0">-</button>
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value="${habit.target}"
+                      onchange="window.updateHabitField('${habit.id}', 'target', this.value)"
+                      class="w-full min-w-0 text-center text-base sm:text-sm font-bold text-[#006a61] bg-transparent focus:outline-none"
+                    />
+                    <button type="button" onclick="window.updateHabitField('${habit.id}', 'target', ${Math.min(31, Number(habit.target) + 1)})" class="w-10 h-[40px] font-bold text-slate-600 hover:bg-slate-200 shrink-0">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        tbody.innerHTML = state.habits.map((habit, idx) => {
+          const catOptions = state.categories.map(c =>
+            `<option value="${escapeHtml(c.name)}" ${c.name === habit.category ? 'selected' : ''}>${escapeHtml(c.name)}</option>`
+          ).join('');
+
+          return `
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3 px-3 text-center font-semibold text-slate-500">${idx + 1}</td>
+              <td class="py-2.5 px-3">
+                <input
+                  type="text"
+                  value="${escapeHtml(habit.title)}"
+                  onchange="window.updateHabitField('${habit.id}', 'title', this.value)"
+                  class="w-full px-3 py-1.5 text-sm font-semibold text-[#0f172a] bg-white border border-slate-200 hover:border-slate-300 focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20 rounded-xl focus:outline-none transition"
+                />
+              </td>
+              <td class="py-2.5 px-3">
+                <select
+                  onchange="window.updateHabitField('${habit.id}', 'category', this.value)"
+                  class="w-full px-2.5 py-1.5 text-xs font-semibold rounded-xl border cursor-pointer focus:outline-none ${getCategoryStyle(habit.category)}">
+                  ${catOptions}
+                </select>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value="${habit.target}"
+                  onchange="window.updateHabitField('${habit.id}', 'target', this.value)"
+                  class="w-20 px-2 py-1.5 text-sm font-bold text-center text-[#006a61] bg-white border border-slate-200 focus:border-[#006a61] rounded-xl focus:outline-none"
+                />
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <div class="inline-flex items-center gap-1">
+                  <button type="button" onclick="window.moveHabit(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Geser ke atas" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+                  </button>
+                  <button type="button" onclick="window.moveHabit(${idx}, 1)" ${idx === state.habits.length - 1 ? 'disabled' : ''} title="Geser ke bawah" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  <button type="button" onclick="window.deleteHabit('${habit.id}')" title="Hapus kebiasaan" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const catListEl = document.getElementById('settingsCategoryList');
+      catListEl.innerHTML = state.categories.map(cat => {
+        const usageCount = state.habits.filter(h => h.category === cat.name).length;
+        return `
+          <div class="py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold border truncate ${getCategoryStyle(cat.name)}">
+                ${escapeHtml(cat.name)}
+              </span>
+              <span class="text-[11px] text-slate-400 shrink-0">(${usageCount} habit)</span>
+            </div>
+            ${state.categories.length > 1 ? `
+              <button type="button" data-delete-category="${escapeHtml(cat.name)}" title="Hapus kategori" class="btn-delete-category p-2 text-slate-400 hover:text-rose-600 rounded-lg transition">
+                <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      ensureHabitCategoriesExist();
+      populateSelectors();
+      renderDashboard();
+      renderTracker();
+      renderSettings();
+    }
+
+    /* ==========================================================================
+       7. AKSI INTERAKTIF PENGGUNA (CRUD HABIT, KATEGORI, CHECKLIST, NAVIGASI)
+       ========================================================================== */
+    window.switchTab = function(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+      const activePanel = document.getElementById(`tab-${tabName}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        const isMatch = btn.dataset.tab === tabName;
+        if (isMatch) {
+          btn.className = 'nav-tab active-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 border-emerald-400 text-white bg-slate-800/70 transition whitespace-nowrap';
+        } else {
+          btn.className = 'nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/40 transition whitespace-nowrap';
+        }
+      });
+
+      document.querySelectorAll('.mobile-nav-tab').forEach(btn => {
+        const isMatch = btn.dataset.tab === tabName;
+        if (isMatch) {
+          btn.className = 'mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[#006a61] bg-teal-50/90 font-bold transition min-h-[52px]';
+        } else {
+          btn.className = 'mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-medium transition min-h-[52px]';
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabName === 'dashboard') {
+        requestAnimationFrame(() => renderDashboard());
+      } else if (tabName === 'tracker') {
+        shouldCenterDayPill = true;
+        renderTracker();
+      } else if (tabName === 'pengaturan') {
+        renderSettings();
+      }
+    };
+
+    window.selectMonthPeriod = function(monthId) {
+      state.selectedMonth = monthId;
+      safeStorageSet(STORAGE_KEY_SELECTED_MONTH, monthId);
+
+      const mCfg = getMonthConfig(monthId);
+      if (state.selectedDay > mCfg.days) {
+        state.selectedDay = mCfg.days;
+      }
+      shouldCenterDayPill = true;
+      populateSelectors();
+      renderDashboard();
+      renderTracker();
+    };
+
+    window.selectTrackerDay = function(day) {
+      const mCfg = getMonthConfig(state.selectedMonth);
+      const clamped = Math.min(mCfg.days, Math.max(1, Number(day) || 1));
+      state.selectedDay = clamped;
+      shouldCenterDayPill = true;
+      renderTracker();
+    };
+
+    window.toggleHabitDay = function(habitId, day) {
+      if (suppressNextCardClick) {
+        suppressNextCardClick = false;
+        return;
+      }
+      const mId = state.selectedMonth;
+      if (!state.logs[mId]) state.logs[mId] = {};
+      if (!state.logs[mId][habitId]) state.logs[mId][habitId] = {};
+
+      const dayKey = String(day);
+      const nextVal = !Boolean(state.logs[mId][habitId][dayKey]);
+      if (nextVal) {
+        state.logs[mId][habitId][dayKey] = true;
+      } else {
+        delete state.logs[mId][habitId][dayKey];
+      }
+
+      shouldCenterDayPill = false;
+      renderTracker();
+      if (state.activeTab === 'dashboard') {
+        renderDashboard();
+      }
+      persistStateToCloud(false);
+    };
+
+    window.updateHabitField = function(habitId, field, value) {
+      const habit = state.habits.find(h => h.id === habitId);
+      if (!habit) return;
+
+      if (field === 'title') {
+        const trimmed = String(value || '').trim();
+        if (!trimmed) {
+          showToast('Judul kebiasaan tidak boleh kosong.', 'error');
+          renderSettings();
+          return;
+        }
+        habit.title = trimmed;
+      } else if (field === 'category') {
+        habit.category = value;
+      } else if (field === 'target') {
+        const parsed = parseInt(value, 10);
+        habit.target = isNaN(parsed) ? 1 : Math.min(31, Math.max(1, parsed));
+      }
+
+      renderAll();
+      persistStateToCloud(false);
+      showToast('Perubahan kebiasaan disimpan & disinkronkan.');
+    };
+
+    window.moveHabit = function(index, direction) {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= state.habits.length) return;
+      const temp = state.habits[index];
+      state.habits[index] = state.habits[targetIndex];
+      state.habits[targetIndex] = temp;
+      renderAll();
+      persistStateToCloud(false);
+    };
+
+    window.deleteHabit = function(habitId) {
+      const habit = state.habits.find(h => h.id === habitId);
+      if (!habit) return;
+
+      openConfirmModal(
+        'Hapus Kebiasaan?',
+        `Kebiasaan "${habit.title}" akan dihapus dari seluruh periode bulan dan Dashboard. Lanjutkan?`,
+        () => {
+          state.habits = state.habits.filter(h => h.id !== habitId);
+          Object.keys(state.logs).forEach(mKey => {
+            if (state.logs[mKey] && state.logs[mKey][habitId]) {
+              delete state.logs[mKey][habitId];
+            }
+          });
+          renderAll();
+          persistStateToCloud(true);
+          showToast(`Kebiasaan "${habit.title}" berhasil dihapus.`);
+        }
+      );
+    };
+
+    function addNewHabit(title, category, target) {
+      const cleanTitle = String(title || '').trim();
+      if (!cleanTitle) return;
+
+      const cleanTarget = Math.min(31, Math.max(1, parseInt(target, 10) || 20));
+      const newId = 'hab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+
+      state.habits.push({
+        id: newId,
+        title: cleanTitle,
+        category: category || state.categories[0]?.name || 'Kesehatan',
+        target: cleanTarget
+      });
+
+      renderAll();
+      persistStateToCloud(true);
+      showToast(`Kebiasaan baru "${cleanTitle}" berhasil ditambahkan!`);
+    }
+
+    function addNewCategory(catName) {
+      const cleanName = String(catName || '').trim();
+      if (!cleanName) return;
+
+      const exists = state.categories.some(c => c.name.toLowerCase() === cleanName.toLowerCase());
+      if (exists) {
+        showToast(`Kategori "${cleanName}" sudah tersedia.`, 'info');
+        return;
+      }
+
+      const colorPick = EXTRA_BADGE_COLORS[state.categories.length % EXTRA_BADGE_COLORS.length];
+      state.categories.push({ name: cleanName, color: colorPick });
+
+      renderAll();
+      persistStateToCloud(true);
+      showToast(`Kategori "${cleanName}" berhasil ditambahkan!`);
+    }
+
+    window.deleteCategory = function(catName) {
+      if (state.categories.length <= 1) {
+        showToast('Minimal harus ada 1 kategori aktif.', 'error');
+        return;
+      }
+      const fallbackCat = state.categories.find(c => c.name !== catName)?.name || 'Kesehatan';
+      state.categories = state.categories.filter(c => c.name !== catName);
+
+      state.habits.forEach(h => {
+        if (h.category === catName) {
+          h.category = fallbackCat;
+        }
+      });
+
+      if (state.categoryFilter === catName) {
+        state.categoryFilter = 'ALL';
+      }
+
+      renderAll();
+      persistStateToCloud(true);
+      showToast(`Kategori "${catName}" dihapus.`);
+    };
+
+    /* ==========================================================================
+       8. EVENT LISTENERS, TOUCH SWIPE, RESIZE & INISIALISASI HALAMAN
+       ========================================================================== */
+    function initApp() {
+      document.querySelectorAll('.nav-tab, .mobile-nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => window.switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('settingsCategoryList').addEventListener('click', (e) => {
+        const delBtn = e.target.closest('.btn-delete-category');
+        if (delBtn) {
+          const catName = delBtn.getAttribute('data-delete-category');
+          if (catName) window.deleteCategory(catName);
+        }
+      });
+
+      document.getElementById('monthSelector').addEventListener('change', (e) => {
+        window.selectMonthPeriod(e.target.value);
+      });
+      document.getElementById('btnHeaderPrevMonth').addEventListener('click', () => {
+        const idx = MONTHS_CONFIG.findIndex(m => m.id === state.selectedMonth);
+        if (idx > 0) window.selectMonthPeriod(MONTHS_CONFIG[idx - 1].id);
+      });
+      document.getElementById('btnHeaderNextMonth').addEventListener('click', () => {
+        const idx = MONTHS_CONFIG.findIndex(m => m.id === state.selectedMonth);
+        if (idx >= 0 && idx < MONTHS_CONFIG.length - 1) window.selectMonthPeriod(MONTHS_CONFIG[idx + 1].id);
+      });
+
+      document.getElementById('trackerCategoryFilter').addEventListener('change', (e) => {
+        state.categoryFilter = e.target.value;
+        shouldCenterDayPill = false;
+        renderTracker();
+      });
+
+      // Menu Opsi Tambahan di Tab Habit Tracker (⋮)
+      const btnMoreMenu = document.getElementById('btnTrackerMoreMenu');
+      const moreMenu = document.getElementById('trackerMoreMenu');
+
+      function closeTrackerMoreMenu() {
+        if (moreMenu && !moreMenu.classList.contains('hidden')) {
+          moreMenu.classList.add('hidden');
+          if (btnMoreMenu) btnMoreMenu.setAttribute('aria-expanded', 'false');
+        }
+      }
+
+      btnMoreMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = moreMenu.classList.contains('hidden');
+        if (isHidden) {
+          moreMenu.classList.remove('hidden');
+          btnMoreMenu.setAttribute('aria-expanded', 'true');
+        } else {
+          closeTrackerMoreMenu();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        const wrapper = document.getElementById('trackerMoreMenuWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+          closeTrackerMoreMenu();
+        }
+      });
+
+      document.getElementById('menuGoToSettings').addEventListener('click', () => {
+        closeTrackerMoreMenu();
+        window.switchTab('pengaturan');
+      });
+
+      document.getElementById('btnViewModeCards').addEventListener('click', () => {
+        state.trackerViewMode = 'cards';
+        shouldCenterDayPill = true;
+        renderTracker();
+      });
+      document.getElementById('btnViewModeMatrix').addEventListener('click', () => {
+        state.trackerViewMode = 'matrix';
+        renderTracker();
+      });
+
+      document.getElementById('btnPrevDay').addEventListener('click', () => {
+        window.selectTrackerDay(state.selectedDay - 1);
+      });
+      document.getElementById('btnNextDay').addEventListener('click', () => {
+        window.selectTrackerDay(state.selectedDay + 1);
+      });
+
+      const dailyListEl = document.getElementById('dailyFocusHabitList');
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      dailyListEl.addEventListener('touchstart', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          touchStartX = e.changedTouches[0].screenX;
+          touchStartY = e.changedTouches[0].screenY;
+        }
+      }, { passive: true });
+
+      dailyListEl.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const deltaX = e.changedTouches[0].screenX - touchStartX;
+          const deltaY = e.changedTouches[0].screenY - touchStartY;
+          if (Math.abs(deltaX) > 65 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+            suppressNextCardClick = true;
+            if (suppressCardClickTimer) clearTimeout(suppressCardClickTimer);
+            suppressCardClickTimer = setTimeout(() => {
+              suppressNextCardClick = false;
+            }, 350);
+
+            if (deltaX < 0) {
+              window.selectTrackerDay(state.selectedDay + 1);
+            } else {
+              window.selectTrackerDay(state.selectedDay - 1);
+            }
+          }
+        }
+      }, { passive: true });
+
+      document.getElementById('btnToggleAllSelectedDay').addEventListener('click', () => {
+        const mId = state.selectedMonth;
+        const dKey = String(state.selectedDay);
+        const filteredHabits = state.categoryFilter === 'ALL'
+          ? state.habits
+          : state.habits.filter(h => h.category === state.categoryFilter);
+
+        if (filteredHabits.length === 0) return;
+
+        const allDone = filteredHabits.every(h => isHabitChecked(mId, h.id, state.selectedDay));
+        if (!state.logs[mId]) state.logs[mId] = {};
+
+        filteredHabits.forEach(h => {
+          if (!state.logs[mId][h.id]) state.logs[mId][h.id] = {};
+          if (allDone) {
+            delete state.logs[mId][h.id][dKey];
+          } else {
+            state.logs[mId][h.id][dKey] = true;
+          }
+        });
+
+        shouldCenterDayPill = false;
+        renderTracker();
+        if (state.activeTab === 'dashboard') renderDashboard();
+        persistStateToCloud(false);
+        showToast(allDone
+          ? `Semua centang tanggal ${state.selectedDay} dibatalkan.`
+          : `Semua kebiasaan tanggal ${state.selectedDay} ditandai selesai!`);
+      });
+
+      function openQuickAddModal() {
+        document.getElementById('quickHabitTitle').value = '';
+        document.getElementById('quickHabitTarget').value = 20;
+        openModal('quickAddModal');
+        setTimeout(() => document.getElementById('quickHabitTitle').focus(), 80);
+      }
+
+      document.getElementById('btnQuickAddHabit').addEventListener('click', openQuickAddModal);
+      document.getElementById('btnMobileQuickAdd').addEventListener('click', openQuickAddModal);
+
+      document.getElementById('formQuickAddHabit').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
+        const title = document.getElementById('quickHabitTitle').value;
+        const cat = document.getElementById('quickHabitCategory').value;
+        const target = document.getElementById('quickHabitTarget').value;
+        addNewHabit(title, cat, target);
+        window.closeModal('quickAddModal');
+      });
+
+      document.getElementById('formAddHabitSettings').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
+        const titleInput = document.getElementById('newHabitTitle');
+        const catInput = document.getElementById('newHabitCategory');
+        const targetInput = document.getElementById('newHabitTarget');
+        addNewHabit(titleInput.value, catInput.value, targetInput.value);
+        titleInput.value = '';
+        targetInput.value = 20;
+      });
+
+      document.getElementById('formAddCategory').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
+        const catInput = document.getElementById('newCategoryName');
+        addNewCategory(catInput.value);
+        catInput.value = '';
+      });
+
+      function promptResetCurrentMonth() {
+        closeTrackerMoreMenu();
+        const mCfg = getMonthConfig(state.selectedMonth);
+        openConfirmModal(
+          `Reset Checklist ${mCfg.fullName}?`,
+          `Seluruh tanda centang pada bulan ${mCfg.fullName} akan dihapus permanen. Tindakan ini tidak memengaruhi bulan lain.`,
+          () => {
+            delete state.logs[state.selectedMonth];
+            renderAll();
+            persistStateToCloud(true);
+            showToast(`Checklist ${mCfg.fullName} berhasil di-reset.`);
+          },
+          { requireText: 'RESET' }
+        );
+      }
+
+      document.getElementById('menuResetMonthLogs').addEventListener('click', promptResetCurrentMonth);
+      document.getElementById('btnSettingsResetMonth').addEventListener('click', promptResetCurrentMonth);
+
+      document.getElementById('btnRestoreDefaultTemplates').addEventListener('click', () => {
+        openConfirmModal(
+          'Pulihkan 10 Template Awal?',
+          'Daftar kebiasaan akan dikembalikan ke 10 template standar awal. Riwayat centang untuk kebiasaan bawaan tetap dipertahankan.',
+          () => {
+            state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+            state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+            renderAll();
+            persistStateToCloud(true);
+            showToast('10 template kebiasaan awal berhasil dipulihkan.');
+          }
+        );
+      });
+
+      document.getElementById('btnLoadDemoData').addEventListener('click', () => {
+        const mCfg = getMonthConfig(state.selectedMonth);
+        openConfirmModal(
+          `Isi Contoh Data Simulasi (${mCfg.label})?`,
+          `Sistem akan mengisi contoh centang realistis selama 22 hari pertama pada bulan ${mCfg.fullName} agar grafik Dashboard dapat langsung Anda tinjau.`,
+          () => {
+            const mId = state.selectedMonth;
+            state.logs[mId] = {};
+            const sampleDays = Math.min(22, mCfg.days);
+            state.habits.forEach((h, idx) => {
+              state.logs[mId][h.id] = {};
+              const ratio = Math.min(0.95, (Number(h.target) || 20) / mCfg.days);
+              for (let d = 1; d <= sampleDays; d++) {
+                const pseudoHash = ((d * 7 + idx * 13) % 100) / 100;
+                if (pseudoHash <= ratio + 0.08) {
+                  state.logs[mId][h.id][String(d)] = true;
+                }
+              }
+            });
+            renderAll();
+            persistStateToCloud(true);
+            showToast(`Data simulasi untuk ${mCfg.fullName} berhasil dimuat!`);
+          }
+        );
+      });
+
+      document.getElementById('confirmTypedInput').addEventListener('input', (e) => {
+        const proceedBtn = document.getElementById('btnConfirmProceed');
+        if (!requiredConfirmWord) {
+          proceedBtn.disabled = false;
+          return;
+        }
+        proceedBtn.disabled = e.target.value.trim().toUpperCase() !== requiredConfirmWord;
+      });
+
+      document.getElementById('btnConfirmCancel').addEventListener('click', () => {
+        pendingConfirmCallback = null;
+        requiredConfirmWord = '';
+        window.closeModal('confirmModal');
+      });
+      document.getElementById('btnConfirmProceed').addEventListener('click', () => {
+        if (requiredConfirmWord) {
+          const typedVal = document.getElementById('confirmTypedInput').value.trim().toUpperCase();
+          if (typedVal !== requiredConfirmWord) return;
+        }
+        if (typeof pendingConfirmCallback === 'function') {
+          pendingConfirmCallback();
+        }
+        pendingConfirmCallback = null;
+        requiredConfirmWord = '';
+        window.closeModal('confirmModal');
+      });
+
+      document.getElementById('btnOpenSyncModal').addEventListener('click', () => {
+        openModal('syncModal');
+      });
+
+      document.getElementById('btnHeaderCopySyncCode').addEventListener('click', async () => {
+        await copyTextToClipboard(syncRoomCode);
+        showToast(`Kode Sync "${syncRoomCode}" disalin! Gunakan kode ini di semua perangkat Anda.`);
+        openModal('syncModal');
+      });
+
+      document.getElementById('btnCopySyncCode').addEventListener('click', async () => {
+        const val = document.getElementById('syncRoomCodeInput').value;
+        await copyTextToClipboard(val);
+        showToast(`Kode Sinkronisasi "${val}" disalin ke clipboard!`);
+      });
+
+      document.getElementById('btnCopyUserId').addEventListener('click', async () => {
+        const val = document.getElementById('displayFullUserId').value;
+        await copyTextToClipboard(val);
+        showToast('UID Sesi disalin ke clipboard!');
+      });
+
+      function switchSyncRoom(newRawCode) {
+        const nextCode = sanitizeSyncCode(newRawCode);
+        syncRoomCode = nextCode;
+        safeStorageSet(STORAGE_KEY_SYNC_CODE, syncRoomCode);
+        updateSyncCodeLabels();
+
+        if (!loadStateFromLocalCache()) {
+          state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+          state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+          state.logs = {};
+        }
+        renderAll();
+
+        if (db && currentUser) {
+          attachFirestoreListener();
+          showToast(`Terhubung ke Kode Ruang "${syncRoomCode}"!`);
+        } else {
+          showToast(`Kode Ruang diatur ke "${syncRoomCode}" (Mode Lokal).`, 'info');
+        }
+      }
+
+      document.getElementById('btnConnectSyncRoom').addEventListener('click', () => {
+        const rawCode = document.getElementById('syncRoomCodeInput').value;
+        switchSyncRoom(rawCode);
+      });
+
+      document.getElementById('btnResetDefaultRoom').addEventListener('click', () => {
+        switchSyncRoom(DEFAULT_SYNC_CODE);
+      });
+
+      document.getElementById('btnExportJson').addEventListener('click', () => {
+        const exportPayload = {
+          appName: 'Habit Tracker & Progress Dashboard (2026-2027)',
+          exportedAt: new Date().toISOString(),
+          selectedMonth: state.selectedMonth,
+          categories: state.categories,
+          habits: state.habits,
+          logs: state.logs
+        };
+        const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const dateStamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `habit-tracker-backup-${dateStamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('File cadangan JSON berhasil diunduh!');
+      });
+
+      const importInput = document.getElementById('importJsonInput');
+      document.getElementById('btnImportJson').addEventListener('click', () => {
+        importInput.value = '';
+        importInput.click();
+      });
+
+      importInput.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            if (!Array.isArray(parsed.habits)) {
+              throw new Error('Struktur file JSON tidak valid (daftar habits tidak ditemukan).');
+            }
+            if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+              state.categories = parsed.categories;
+            }
+            state.habits = parsed.habits;
+            state.logs = parsed.logs && typeof parsed.logs === 'object' ? parsed.logs : {};
+            if (parsed.selectedMonth && MONTHS_CONFIG.some(m => m.id === parsed.selectedMonth)) {
+              state.selectedMonth = parsed.selectedMonth;
+              safeStorageSet(STORAGE_KEY_SELECTED_MONTH, state.selectedMonth);
+            }
+            renderAll();
+            persistStateToCloud(true);
+            window.closeModal('syncModal');
+            showToast('Data JSON berhasil dipulihkan dan disinkronkan!');
+          } catch (err) {
+            showToast('Gagal mengimpor JSON: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      document.querySelectorAll('[data-modal-backdrop]').forEach(backdrop => {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) {
+            window.closeModal(backdrop.getAttribute('data-modal-backdrop'));
+          }
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeTrackerMoreMenu();
+          document.querySelectorAll('[data-modal-backdrop]').forEach(m => {
+            if (!m.classList.contains('hidden')) {
+              window.closeModal(m.getAttribute('data-modal-backdrop'));
+            }
+          });
+        }
+      });
+
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (state.activeTab === 'dashboard') {
+            renderDashboard();
+          }
+        }, 220);
+      });
+
+      bootstrapFirebase();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
