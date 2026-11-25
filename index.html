@@ -72,6 +72,75 @@
       scrollbar-width: none;
     }
 
+    /* Tampilan dropdown konsisten, dengan panah kustom dan fokus yang jelas */
+    select {
+      -webkit-appearance: none;
+      appearance: none;
+      min-height: 42px;
+      padding-right: 2.5rem !important;
+      border: 1px solid #d7e2df;
+      border-radius: 0.75rem;
+      background-color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23647772' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+      cursor: pointer;
+    }
+    select:hover:not(:disabled) {
+      border-color: #9bb9b2;
+    }
+    select:focus-visible {
+      outline: none;
+      border-color: #006a61;
+      box-shadow: 0 0 0 3px rgba(0, 106, 97, 0.14);
+    }
+    select:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    select option {
+      color: #0f172a;
+      background-color: #fff;
+    }
+    #monthSelector {
+      min-height: 32px;
+      border: 0;
+      border-radius: 0.5rem;
+      padding-left: 0.3rem;
+      padding-right: 1.65rem !important;
+      background-color: transparent;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-position: right 0.2rem center;
+      color-scheme: dark;
+    }
+    #monthSelector:hover:not(:disabled) {
+      border-color: transparent;
+      background-color: rgba(255,255,255,0.06);
+    }
+    #monthSelector:focus-visible {
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+    }
+    #monthSelector option {
+      color: #f8fafc;
+      background-color: #0f172a;
+    }
+    #trackerCategoryFilter {
+      min-height: 28px;
+      border: 0;
+      border-radius: 0.4rem;
+      padding-left: 0.15rem;
+      padding-right: 1.7rem !important;
+      background-color: transparent;
+      background-position: right 0.15rem center;
+    }
+    #trackerCategoryFilter:hover:not(:disabled) {
+      border-color: transparent;
+      background-color: #f1f5f9;
+    }
+
     /* Checkbox interaktif kustom untuk tabel matrix */
     .habit-checkbox {
       appearance: none;
@@ -210,6 +279,10 @@
           <span>Habit Tracker</span>
         </button>
 
+        <button type="button" data-tab="review" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/40 transition whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg><span>Review Mingguan</span>
+        </button>
+
         <button type="button" data-tab="pengaturan" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border-b-2 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/40 transition whitespace-nowrap">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -242,9 +315,6 @@
         </div>
 
         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-          <button id="btnLoadDemoData" type="button" class="px-3 py-2.5 sm:py-2 min-h-[40px] text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006a61] border border-emerald-200 transition text-center">
-            Isi Simulasi
-          </button>
           <button type="button" onclick="window.switchTab('tracker')" class="px-3.5 py-2.5 sm:py-2 min-h-[40px] text-xs font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition text-center">
             Checklist Harian →
           </button>
@@ -438,6 +508,37 @@
       </div>
     </section>
 
+    <!-- ==================== TAB: WEEKLY REVIEW ==================== -->
+    <section id="tab-review" class="tab-panel hidden space-y-5 sm:space-y-6 animate-fade-in">
+      <div class="bg-gradient-to-br from-[#0f172a] to-[#164e48] rounded-2xl p-5 sm:p-7 text-white shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Jeda sejenak, lihat kembali</p>
+        <h2 class="text-xl sm:text-2xl font-bold mt-1">Weekly Review & Reflection</h2>
+        <p class="text-sm text-slate-300 mt-1 max-w-2xl">Buka review lama kapan saja atau mulai refleksi untuk pekan mana pun dalam periode tracker.</p>
+        <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <label for="reviewWeekSelector" class="text-xs font-semibold text-slate-300">Pilih pekan review</label>
+          <select id="reviewWeekSelector" class="w-full sm:w-auto min-w-[220px] rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-sm"><p class="text-xs text-slate-500">Habit selesai</p><p id="reviewCompletion" class="text-2xl font-extrabold text-[#006a61] mt-1">0%</p><p id="reviewCompletionDetail" class="text-xs text-slate-500 mt-1">0 dari 0 kesempatan</p></div>
+        <div class="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-sm"><p class="text-xs text-slate-500">Hari dengan progres</p><p id="reviewActiveDays" class="text-2xl font-extrabold text-slate-900 mt-1">0 / 7</p><p class="text-xs text-slate-500 mt-1">Minimal satu habit ditandai</p></div>
+        <div class="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-sm"><p class="text-xs text-slate-500">Habit paling konsisten</p><p id="reviewTopHabit" class="text-base font-bold text-slate-900 mt-2">Belum ada data</p><p id="reviewTopHabitDetail" class="text-xs text-slate-500 mt-1">Mulai tandai progres harian Anda</p></div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-emerald-900/10">
+        <div class="flex items-start justify-between gap-3 mb-4"><div><h3 class="font-bold text-slate-900">Refleksi pekan ini</h3><p class="text-xs text-slate-500 mt-1">Jawaban tersimpan otomatis dan tersinkronisasi.</p></div><span id="reviewSaveStatus" class="text-[11px] text-slate-400 shrink-0">Tersimpan</span></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <label class="block"><span class="text-sm font-semibold text-slate-700">Apa pencapaian yang paling saya syukuri?</span><textarea data-review-field="wins" rows="4" placeholder="Tuliskan hal yang berjalan baik..." class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
+          <label class="block"><span class="text-sm font-semibold text-slate-700">Apa tantangan atau pola yang saya sadari?</span><textarea data-review-field="challenges" rows="4" placeholder="Apa yang membuat beberapa habit terasa sulit?" class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
+          <label class="block"><span class="text-sm font-semibold text-slate-700">Apa yang membantu saya tetap konsisten?</span><textarea data-review-field="supports" rows="4" placeholder="Rutinitas, lingkungan, atau dukungan yang membantu..." class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
+          <label class="block"><span class="text-sm font-semibold text-slate-700">Satu fokus kecil untuk pekan depan</span><textarea data-review-field="nextFocus" rows="4" placeholder="Pilih langkah yang realistis dan spesifik..." class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-emerald-900/10">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-4"><div><h3 class="font-bold text-slate-900">Review sebelumnya</h3><p class="text-xs text-slate-500 mt-1">Pilih catatan yang pernah disimpan untuk membacanya atau melanjutkan edit.</p></div><span id="reviewHistoryCount" class="text-xs text-slate-500"></span></div>
+        <div id="reviewHistoryList" class="space-y-2"></div>
+      </div>
+    </section>
+
     <!-- ==================== TAB 2: HABIT TRACKER ==================== -->
     <section id="tab-tracker" class="tab-panel hidden space-y-4 sm:space-y-5 animate-fade-in">
       <!-- Toolbar Kontrol Tracker -->
@@ -485,9 +586,6 @@
           <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <!-- Tombol Cepat + Tambah Habit Baru -->
             <button id="btnQuickAddHabit" type="button" class="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 min-h-[42px] text-xs sm:text-sm font-semibold rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white shadow-sm transition whitespace-nowrap">
-              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
               <span>+ Habit Baru</span>
             </button>
 
@@ -676,7 +774,7 @@
               <div>
                 <label for="newCategoryName" class="block text-xs font-semibold text-slate-700 mb-1">Nama Kategori Baru</label>
                 <div class="flex gap-2">
-                  <input type="text" id="newCategoryName" required placeholder="Contoh: Karir & Bisnis" class="flex-1 px-3.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20" />
+                  <input type="text" id="newCategoryName" required placeholder="Contoh: Karir & Bisnis" class="flex-1 min-w-0 px-3.5 py-2.5 text-base sm:text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20" />
                   <button type="submit" class="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl bg-[#0f172a] hover:bg-slate-800 text-white transition shrink-0 min-h-[44px]">
                     + Tambah
                   </button>
@@ -735,7 +833,7 @@
 
   <!-- ==================== MOBILE BOTTOM NAVIGATION BAR (< md) ==================== -->
   <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_-4px_rgba(15,23,42,0.1)] pb-safe" aria-label="Navigasi Mobile">
-    <div class="grid grid-cols-4 items-center px-2 pt-1.5">
+    <div class="grid grid-cols-5 items-center px-1 pt-1.5">
       <button type="button" data-tab="dashboard" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[#006a61] bg-teal-50/90 font-bold transition min-h-[52px]">
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
@@ -757,6 +855,10 @@
           </svg>
         </div>
         <span class="text-[10px] text-[#006a61] font-bold">+ Habit</span>
+      </button>
+
+      <button type="button" data-tab="review" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-medium transition min-h-[52px]">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg><span class="text-[10px]">Review</span>
       </button>
 
       <button type="button" data-tab="pengaturan" class="mobile-nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 font-medium transition min-h-[52px]">
@@ -1054,6 +1156,7 @@
       categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
       habits: JSON.parse(JSON.stringify(DEFAULT_HABITS)),
       logs: {},
+      weeklyReviews: {},
       updatedAt: Date.now()
     };
 
@@ -1216,6 +1319,7 @@
         categories: state.categories,
         habits: state.habits,
         logs: state.logs,
+        weeklyReviews: state.weeklyReviews,
         updatedAt: state.updatedAt
       };
       safeStorageSet(STORAGE_KEY_DATA_PREFIX + syncRoomCode, JSON.stringify(payload));
@@ -1232,6 +1336,7 @@
             : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
           state.habits = parsed.habits;
           state.logs = parsed.logs && typeof parsed.logs === 'object' ? parsed.logs : {};
+          state.weeklyReviews = parsed.weeklyReviews && typeof parsed.weeklyReviews === 'object' ? parsed.weeklyReviews : {};
           state.updatedAt = parsed.updatedAt || Date.now();
           ensureHabitCategoriesExist();
           return true;
@@ -1318,6 +1423,7 @@
                 : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
               state.habits = remoteData.habits;
               state.logs = remoteData.logs && typeof remoteData.logs === 'object' ? remoteData.logs : {};
+              state.weeklyReviews = remoteData.weeklyReviews && typeof remoteData.weeklyReviews === 'object' ? remoteData.weeklyReviews : {};
               state.updatedAt = parsedTimestamp(remoteData.updatedAt);
               ensureHabitCategoriesExist();
               saveStateToLocalCache();
@@ -1368,6 +1474,7 @@
             categories: state.categories,
             habits: state.habits,
             logs: state.logs,
+            weeklyReviews: state.weeklyReviews,
             updatedAt: state.updatedAt,
             lastUpdatedByUid: currentUser.uid
           });
@@ -2094,9 +2201,9 @@
 
       thead.innerHTML = `
         <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50">
-          <th class="py-3 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center md:sticky md:left-0 md:z-30 bg-slate-100 border-r border-slate-200">No</th>
-          <th class="py-3 px-3.5 w-[185px] min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] text-left md:sticky md:left-[42px] md:z-30 bg-slate-100 border-r border-slate-200 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Nama Kebiasaan</th>
-          <th class="py-3 px-3 min-w-[155px] text-left bg-slate-50 border-r border-slate-200">Kategori</th>
+          <th class="py-3 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center sticky left-0 z-30 bg-slate-100 border-r border-slate-200">No</th>
+          <th class="py-3 px-2 sm:px-3.5 w-[125px] min-w-[125px] sm:w-[185px] sm:min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] text-left sticky left-[42px] z-30 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Nama Kebiasaan</th>
+          <th class="hidden sm:table-cell py-3 px-3 min-w-[155px] text-left bg-slate-50 border-r border-slate-200">Kategori</th>
           <th class="py-3 px-2.5 w-[76px] min-w-[76px] text-center bg-slate-50">Target</th>
           ${dayHeadersHtml}
           <th class="py-3 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center bg-teal-50 text-[#006a61] border-l-2 border-slate-200 lg:sticky lg:right-[176px] lg:z-30">Tercapai</th>
@@ -2158,13 +2265,13 @@
 
           return `
             <tr class="group hover:bg-teal-50/20 transition">
-              <td class="py-2 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center font-semibold text-slate-500 md:sticky md:left-0 md:z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200">
+              <td class="py-2 px-2 w-[42px] min-w-[42px] max-w-[42px] text-center font-semibold text-slate-500 sticky left-0 z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200">
                 ${globalIndex}
               </td>
-              <td class="py-2 px-3.5 w-[185px] min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] font-semibold text-[#0f172a] md:sticky md:left-[42px] md:z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
-                <div class="truncate max-w-[165px] lg:max-w-[215px]" title="${escapeHtml(habit.title)}">${escapeHtml(habit.title)}</div>
+              <td class="py-2 px-2 sm:px-3.5 w-[125px] min-w-[125px] sm:w-[185px] sm:min-w-[175px] lg:w-[220px] lg:min-w-[200px] max-w-[240px] font-semibold text-[#0f172a] sticky left-[42px] z-20 bg-white group-hover:bg-teal-50 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+                <div class="truncate max-w-[105px] sm:max-w-[165px] lg:max-w-[215px]" title="${escapeHtml(habit.title)}">${escapeHtml(habit.title)}</div>
               </td>
-              <td class="py-2 px-2.5 border-r border-slate-200">
+              <td class="hidden sm:table-cell py-2 px-2.5 border-r border-slate-200">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${getCategoryStyle(habit.category)}">
                   ${escapeHtml(habit.category)}
                 </span>
@@ -2211,10 +2318,10 @@
 
       tfoot.innerHTML = `
         <tr class="bg-slate-100 border-b border-slate-200">
-          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#0f172a] md:sticky md:left-0 md:z-20 bg-slate-100 border-r border-slate-200">
+          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#0f172a] sticky left-0 z-20 bg-slate-100 border-r border-slate-200">
             Total Selesai Harian
           </td>
-          <td class="py-2.5 px-3 text-slate-500 border-r border-slate-200">—</td>
+          <td class="hidden sm:table-cell py-2.5 px-3 text-slate-500 border-r border-slate-200">—</td>
           <td class="py-2.5 px-2 text-center font-bold text-slate-700">${totalFilteredTarget}</td>
           ${totalRowCells}
           <td class="py-2.5 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center font-extrabold text-[#006a61] bg-teal-100 border-l-2 border-slate-300 lg:sticky lg:right-[176px] lg:z-20">${grandDone}</td>
@@ -2222,10 +2329,10 @@
           <td class="py-2.5 px-2 w-[96px] min-w-[96px] max-w-[96px] text-center font-extrabold text-emerald-800 bg-emerald-100 border-l border-slate-200 lg:sticky lg:right-0 lg:z-20">${overallPct}%</td>
         </tr>
         <tr class="bg-emerald-50">
-          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#006a61] md:sticky md:left-0 md:z-20 bg-emerald-50 border-r border-slate-200">
+          <td colspan="2" class="py-2.5 px-4 text-left font-bold text-[#006a61] sticky left-0 z-20 bg-emerald-50 border-r border-slate-200">
             Tingkat Penyelesaian (%)
           </td>
-          <td class="py-2.5 px-3 text-slate-500 border-r border-slate-200">Dari ${denom} habit</td>
+          <td class="hidden sm:table-cell py-2.5 px-3 text-slate-500 border-r border-slate-200">Dari ${denom} habit</td>
           <td class="py-2.5 px-2 text-center text-slate-500">100%</td>
           ${pctRowCells}
           <td colspan="3" class="py-2.5 px-3 min-w-[272px] text-center text-xs font-semibold text-[#006a61] bg-emerald-50 border-l-2 border-slate-200 lg:sticky lg:right-0 lg:z-20">
@@ -2397,6 +2504,123 @@
       renderDashboard();
       renderTracker();
       renderSettings();
+      renderWeeklyReview();
+    }
+
+    let selectedReviewWeekStart = null;
+    let reviewSaveTimer = null;
+
+    function dateKeyLocal(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getReviewWeeks(monthCfg) {
+      const first = new Date(monthCfg.year, monthCfg.monthIndex, 1);
+      const last = new Date(monthCfg.year, monthCfg.monthIndex, monthCfg.days);
+      const cursor = new Date(first);
+      cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7));
+      const weeks = [];
+      while (cursor <= last) {
+        const start = new Date(cursor);
+        const end = new Date(cursor);
+        end.setDate(end.getDate() + 6);
+        const startIn = new Date(Math.max(start.getTime(), first.getTime()));
+        const endIn = new Date(Math.min(end.getTime(), last.getTime()));
+        weeks.push({ key: dateKeyLocal(start), start, end, startIn, endIn });
+        cursor.setDate(cursor.getDate() + 7);
+      }
+      return weeks;
+    }
+
+    function getAllReviewWeeks() {
+      const firstCfg = MONTHS_CONFIG[0];
+      const lastCfg = MONTHS_CONFIG[MONTHS_CONFIG.length - 1];
+      const first = new Date(firstCfg.year, firstCfg.monthIndex, 1);
+      const last = new Date(lastCfg.year, lastCfg.monthIndex, lastCfg.days);
+      const cursor = new Date(first);
+      cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7));
+      const weeks = [];
+      while (cursor <= last) {
+        const start = new Date(cursor);
+        const end = new Date(cursor);
+        end.setDate(end.getDate() + 6);
+        const startIn = new Date(Math.max(start.getTime(), first.getTime()));
+        const endIn = new Date(Math.min(end.getTime(), last.getTime()));
+        weeks.push({ key: dateKeyLocal(start), start, end, startIn, endIn });
+        cursor.setDate(cursor.getDate() + 7);
+      }
+      return weeks;
+    }
+
+    function formatReviewDate(d) {
+      const month = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][d.getMonth()];
+      return `${d.getDate()} ${month} ${d.getFullYear()}`;
+    }
+
+    function renderWeeklyReview() {
+      const weeks = getAllReviewWeeks();
+      const selector = document.getElementById('reviewWeekSelector');
+      if (!selector) return;
+      if (!selectedReviewWeekStart || !weeks.some(w => w.key === selectedReviewWeekStart)) {
+        const cfg = MONTHS_CONFIG.find(m => m.id === state.selectedMonth) || MONTHS_CONFIG[0];
+        const monthDate = new Date(cfg.year, cfg.monthIndex, 1);
+        const initial = getReviewWeeks(cfg)[0];
+        selectedReviewWeekStart = initial?.key || dateKeyLocal(monthDate);
+      }
+      selector.innerHTML = weeks.map((w, idx) => `<option value="${w.key}" ${w.key === selectedReviewWeekStart ? 'selected' : ''}>Pekan ${idx + 1} · ${formatReviewDate(w.startIn)} – ${formatReviewDate(w.endIn)}</option>`).join('');
+      const week = weeks.find(w => w.key === selectedReviewWeekStart) || weeks[0];
+      if (!week) return;
+      const review = state.weeklyReviews?.[week.key] || {};
+      document.querySelectorAll('.weekly-review-input').forEach(el => { el.value = review[el.dataset.reviewField] || ''; });
+      const dayDates = [];
+      for (let d = new Date(week.startIn); d <= week.endIn; d.setDate(d.getDate() + 1)) dayDates.push(new Date(d));
+      let done = 0, total = 0, activeDays = 0;
+      const habitCounts = state.habits.map(h => ({ habit: h, done: 0 }));
+      for (const d of dayDates) {
+        const monthId = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const day = String(d.getDate());
+        let dayDone = false;
+        for (const item of habitCounts) {
+          total++;
+          if (state.logs?.[monthId]?.[item.habit.id]?.[day]) { done++; item.done++; dayDone = true; }
+        }
+        if (dayDone) activeDays++;
+      }
+      const best = [...habitCounts].sort((a,b) => b.done - a.done)[0];
+      document.getElementById('reviewCompletion').textContent = `${total ? Math.round(done / total * 100) : 0}%`;
+      document.getElementById('reviewCompletionDetail').textContent = `${done} dari ${total} kesempatan habit`;
+      document.getElementById('reviewActiveDays').textContent = `${activeDays} / ${dayDates.length}`;
+      document.getElementById('reviewTopHabit').textContent = best?.done ? best.habit.title : 'Belum ada data';
+      document.getElementById('reviewTopHabitDetail').textContent = best?.done ? `${best.done} kali ditandai pekan ini` : 'Mulai tandai progres harian Anda';
+      document.getElementById('reviewSaveStatus').textContent = 'Tersimpan';
+
+      const history = document.getElementById('reviewHistoryList');
+      const saved = Object.entries(state.weeklyReviews || {}).filter(([, fields]) => fields && Object.values(fields).some(v => String(v || '').trim())).sort(([a],[b]) => b.localeCompare(a));
+      document.getElementById('reviewHistoryCount').textContent = `${saved.length} review tersimpan`;
+      history.innerHTML = saved.length ? saved.map(([key, fields]) => {
+        const savedWeek = weeks.find(w => w.key === key);
+        const start = savedWeek?.startIn || new Date(`${key}T00:00:00`);
+        const end = savedWeek?.endIn || new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+        const excerpt = fields.nextFocus || fields.wins || fields.challenges || fields.supports || 'Review tersimpan';
+        const selected = key === selectedReviewWeekStart;
+        return `<button type="button" data-open-review="${escapeHtml(key)}" class="w-full text-left rounded-xl border ${selected ? 'border-[#006a61] bg-teal-50/70' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'} p-3.5 transition"><span class="flex items-center justify-between gap-3"><span class="text-sm font-bold text-slate-800">${formatReviewDate(start)} – ${formatReviewDate(end)}</span><span class="text-[11px] font-semibold text-[#006a61]">${selected ? 'Sedang dibuka' : 'Buka review →'}</span></span><span class="block mt-1.5 text-xs text-slate-600 line-clamp-2">${escapeHtml(String(excerpt).slice(0, 180))}</span></button>`;
+      }).join('') : '<div class="rounded-xl border border-dashed border-slate-300 p-5 text-center"><p class="text-sm font-semibold text-slate-700">Belum ada review tersimpan</p><p class="text-xs text-slate-500 mt-1">Pilih pekan di atas dan isi refleksi. Catatan Anda akan muncul di sini.</p></div>';
+    }
+
+    function saveWeeklyReviewField(field, value) {
+      if (!selectedReviewWeekStart) return;
+      if (!state.weeklyReviews) state.weeklyReviews = {};
+      if (!state.weeklyReviews[selectedReviewWeekStart]) state.weeklyReviews[selectedReviewWeekStart] = {};
+      state.weeklyReviews[selectedReviewWeekStart][field] = value;
+      document.getElementById('reviewSaveStatus').textContent = 'Menyimpan…';
+      clearTimeout(reviewSaveTimer);
+      reviewSaveTimer = setTimeout(() => {
+        persistStateToCloud(true);
+        document.getElementById('reviewSaveStatus').textContent = 'Tersimpan';
+      }, 450);
     }
 
     /* ==========================================================================
@@ -2433,6 +2657,8 @@
       } else if (tabName === 'tracker') {
         shouldCenterDayPill = true;
         renderTracker();
+      } else if (tabName === 'review') {
+        renderWeeklyReview();
       } else if (tabName === 'pengaturan') {
         renderSettings();
       }
@@ -2614,6 +2840,21 @@
           const catName = delBtn.getAttribute('data-delete-category');
           if (catName) window.deleteCategory(catName);
         }
+      });
+
+      document.getElementById('reviewHistoryList').addEventListener('click', (e) => {
+        const button = e.target.closest('[data-open-review]');
+        if (!button) return;
+        selectedReviewWeekStart = button.dataset.openReview;
+        renderWeeklyReview();
+        document.getElementById('reviewWeekSelector').focus();
+      });
+      document.getElementById('reviewWeekSelector').addEventListener('change', (e) => {
+        selectedReviewWeekStart = e.target.value;
+        renderWeeklyReview();
+      });
+      document.querySelectorAll('.weekly-review-input').forEach(input => {
+        input.addEventListener('input', () => saveWeeklyReviewField(input.dataset.reviewField, input.value));
       });
 
       document.getElementById('monthSelector').addEventListener('change', (e) => {
@@ -2818,31 +3059,6 @@
         );
       });
 
-      document.getElementById('btnLoadDemoData').addEventListener('click', () => {
-        const mCfg = getMonthConfig(state.selectedMonth);
-        openConfirmModal(
-          `Isi Contoh Data Simulasi (${mCfg.label})?`,
-          `Sistem akan mengisi contoh centang realistis selama 22 hari pertama pada bulan ${mCfg.fullName} agar grafik Dashboard dapat langsung Anda tinjau.`,
-          () => {
-            const mId = state.selectedMonth;
-            state.logs[mId] = {};
-            const sampleDays = Math.min(22, mCfg.days);
-            state.habits.forEach((h, idx) => {
-              state.logs[mId][h.id] = {};
-              const ratio = Math.min(0.95, (Number(h.target) || 20) / mCfg.days);
-              for (let d = 1; d <= sampleDays; d++) {
-                const pseudoHash = ((d * 7 + idx * 13) % 100) / 100;
-                if (pseudoHash <= ratio + 0.08) {
-                  state.logs[mId][h.id][String(d)] = true;
-                }
-              }
-            });
-            renderAll();
-            persistStateToCloud(true);
-            showToast(`Data simulasi untuk ${mCfg.fullName} berhasil dimuat!`);
-          }
-        );
-      });
 
       document.getElementById('confirmTypedInput').addEventListener('input', (e) => {
         const proceedBtn = document.getElementById('btnConfirmProceed');
@@ -2930,7 +3146,8 @@
           selectedMonth: state.selectedMonth,
           categories: state.categories,
           habits: state.habits,
-          logs: state.logs
+          logs: state.logs,
+          weeklyReviews: state.weeklyReviews
         };
         const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -2967,6 +3184,7 @@
             }
             state.habits = parsed.habits;
             state.logs = parsed.logs && typeof parsed.logs === 'object' ? parsed.logs : {};
+            state.weeklyReviews = parsed.weeklyReviews && typeof parsed.weeklyReviews === 'object' ? parsed.weeklyReviews : {};
             if (parsed.selectedMonth && MONTHS_CONFIG.some(m => m.id === parsed.selectedMonth)) {
               state.selectedMonth = parsed.selectedMonth;
               safeStorageSet(STORAGE_KEY_SELECTED_MONTH, state.selectedMonth);
