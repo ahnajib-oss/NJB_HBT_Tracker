@@ -514,9 +514,22 @@
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Jeda sejenak, lihat kembali</p>
         <h2 class="text-xl sm:text-2xl font-bold mt-1">Weekly Review & Reflection</h2>
         <p class="text-sm text-slate-300 mt-1 max-w-2xl">Buka review lama kapan saja atau mulai refleksi untuk pekan mana pun dalam periode tracker.</p>
-        <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          <label for="reviewWeekSelector" class="text-xs font-semibold text-slate-300">Pilih pekan review</label>
-          <select id="reviewWeekSelector" class="w-full sm:w-auto min-w-[220px] rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"></select>
+        <div class="mt-5 space-y-3">
+          <div class="flex items-center gap-2">
+            <button type="button" id="btnReviewPrevWeek" aria-label="Pekan sebelumnya" class="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <label for="reviewMonthSelector" class="sr-only">Pilih bulan review</label>
+            <select id="reviewMonthSelector" class="flex-1 sm:flex-none sm:min-w-[210px] rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"></select>
+            <button type="button" id="btnReviewNextWeek" aria-label="Pekan berikutnya" class="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+          <div id="reviewWeekChips" role="group" aria-label="Pilih pekan" class="grid grid-flow-col auto-cols-fr gap-1.5 sm:gap-2 pt-1 max-w-3xl"></div>
+          <div class="flex items-center justify-between gap-3 min-h-[24px]">
+            <p id="reviewSelectedWeekLabel" class="text-xs font-semibold text-emerald-200"></p>
+            <button type="button" id="btnReviewThisWeek" class="hidden text-xs font-semibold text-white underline underline-offset-2 hover:text-emerald-200">Ke pekan ini</button>
+          </div>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2700,17 +2713,85 @@
         : 'Review terkirim — tersimpan di perangkat ini ✓');
     }
 
+    const REVIEW_MONTH_ABBR = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+    // Pekan dikelompokkan ke bulan tempat pekan itu DIMULAI (Senin), sehingga tiap bulan hanya punya 4-5 pekan.
+    function reviewWeekMonthId(week) {
+      return `${week.startIn.getFullYear()}-${String(week.startIn.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatReviewRange(startIn, endIn) {
+      const sm = REVIEW_MONTH_ABBR[startIn.getMonth()];
+      const em = REVIEW_MONTH_ABBR[endIn.getMonth()];
+      if (startIn.getMonth() === endIn.getMonth() && startIn.getFullYear() === endIn.getFullYear()) {
+        return startIn.getDate() === endIn.getDate() ? `${startIn.getDate()} ${sm}` : `${startIn.getDate()}–${endIn.getDate()} ${sm}`;
+      }
+      return `${startIn.getDate()} ${sm}–${endIn.getDate()} ${em}`;
+    }
+
+    function getCurrentReviewWeek(weeks) {
+      const todayKey = dateKeyLocal(new Date());
+      return weeks.find(w => todayKey >= dateKeyLocal(w.start) && todayKey <= dateKeyLocal(w.end)) || null;
+    }
+
+    function pickDefaultReviewWeek(weeks) {
+      const current = getCurrentReviewWeek(weeks);
+      if (current) return current;
+      const monthId = state.selectedMonth;
+      return weeks.find(w => reviewWeekMonthId(w) === monthId) || weeks[0];
+    }
+
+    function renderReviewWeekPicker(weeks) {
+      const monthSel = document.getElementById('reviewMonthSelector');
+      const chipsEl = document.getElementById('reviewWeekChips');
+      if (!monthSel || !chipsEl || !weeks.length) return;
+
+      const selIdx = Math.max(0, weeks.findIndex(w => w.key === selectedReviewWeekStart));
+      const selWeek = weeks[selIdx];
+      const selMonthId = reviewWeekMonthId(selWeek);
+      const current = getCurrentReviewWeek(weeks);
+
+      monthSel.innerHTML = MONTHS_CONFIG.map(m => `<option value="${m.id}" ${m.id === selMonthId ? 'selected' : ''}>${m.fullName}</option>`).join('');
+
+      const inMonth = weeks.filter(w => reviewWeekMonthId(w) === selMonthId);
+      chipsEl.innerHTML = inMonth.map((w, i) => {
+        const isSel = w.key === selectedReviewWeekStart;
+        const st = getReviewStatus(state.weeklyReviews && state.weeklyReviews[w.key]);
+        const dot = st === 'submitted' ? 'bg-emerald-400' : (st === 'empty' ? 'border border-slate-400' : 'bg-amber-400');
+        const isNow = current && current.key === w.key;
+        return `<button type="button" data-week-key="${w.key}" aria-pressed="${isSel}" class="relative rounded-xl px-1 py-2 text-center transition border ${isSel ? 'bg-white text-[#0f172a] border-white shadow' : 'bg-white/10 text-slate-100 border-white/10 hover:bg-white/20'}">`
+          + `<span class="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full ${dot}"></span>`
+          + `<span class="block text-[11px] sm:text-xs font-bold whitespace-nowrap">Pekan ${i + 1}</span>`
+          + `<span class="block mt-0.5 text-[10px] leading-tight ${isSel ? 'text-slate-500' : 'text-slate-300'}">${formatReviewRange(w.startIn, w.endIn)}</span>`
+          + (isNow ? '<span class="absolute -top-1.5 right-1 px-1.5 py-px rounded-full bg-emerald-400 text-[#0f172a] text-[9px] font-extrabold leading-none">Kini</span>' : '')
+          + `</button>`;
+      }).join('');
+
+      const posInMonth = inMonth.findIndex(w => w.key === selectedReviewWeekStart) + 1;
+      const isNowSelected = current && current.key === selectedReviewWeekStart;
+      document.getElementById('reviewSelectedWeekLabel').textContent =
+        `Pekan ${posInMonth} · ${formatReviewRange(selWeek.startIn, selWeek.endIn)} ${selWeek.endIn.getFullYear()}${isNowSelected ? ' · Pekan ini' : ''}`;
+      document.getElementById('btnReviewPrevWeek').disabled = selIdx <= 0;
+      document.getElementById('btnReviewNextWeek').disabled = selIdx >= weeks.length - 1;
+      document.getElementById('btnReviewThisWeek').classList.toggle('hidden', !current || isNowSelected);
+    }
+
+    function stepReviewWeek(delta) {
+      const weeks = getAllReviewWeeks();
+      const idx = weeks.findIndex(w => w.key === selectedReviewWeekStart);
+      const next = weeks[idx + delta];
+      if (!next) return;
+      selectedReviewWeekStart = next.key;
+      renderWeeklyReview();
+    }
+
     function renderWeeklyReview() {
       const weeks = getAllReviewWeeks();
-      const selector = document.getElementById('reviewWeekSelector');
-      if (!selector) return;
+      if (!document.getElementById('reviewWeekChips') || !weeks.length) return;
       if (!selectedReviewWeekStart || !weeks.some(w => w.key === selectedReviewWeekStart)) {
-        const cfg = MONTHS_CONFIG.find(m => m.id === state.selectedMonth) || MONTHS_CONFIG[0];
-        const monthDate = new Date(cfg.year, cfg.monthIndex, 1);
-        const initial = getReviewWeeks(cfg)[0];
-        selectedReviewWeekStart = initial?.key || dateKeyLocal(monthDate);
+        selectedReviewWeekStart = pickDefaultReviewWeek(weeks).key;
       }
-      selector.innerHTML = weeks.map((w, idx) => `<option value="${w.key}" ${w.key === selectedReviewWeekStart ? 'selected' : ''}>Pekan ${idx + 1} · ${formatReviewDate(w.startIn)} – ${formatReviewDate(w.endIn)}</option>`).join('');
+      renderReviewWeekPicker(weeks);
       const week = weeks.find(w => w.key === selectedReviewWeekStart) || weeks[0];
       if (!week) return;
       const review = state.weeklyReviews?.[week.key] || {};
@@ -2761,6 +2842,7 @@
       state.weeklyReviews[selectedReviewWeekStart][field] = value;
       state.weeklyReviews[selectedReviewWeekStart]._editedAt = Date.now();
       updateReviewSubmitUI();
+      renderReviewWeekPicker(getAllReviewWeeks());
       document.getElementById('reviewSaveStatus').textContent = 'Menyimpan…';
       clearTimeout(reviewSaveTimer);
       reviewSaveTimer = setTimeout(() => {
@@ -2993,12 +3075,29 @@
         if (!button) return;
         selectedReviewWeekStart = button.dataset.openReview;
         renderWeeklyReview();
-        document.getElementById('reviewWeekSelector').focus();
+        const firstField = document.querySelector('[data-review-field="wins"]');
+        if (firstField) firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       document.getElementById('btnSubmitReview').addEventListener('click', submitWeeklyReview);
-      document.getElementById('reviewWeekSelector').addEventListener('change', (e) => {
-        selectedReviewWeekStart = e.target.value;
+      document.getElementById('reviewWeekChips').addEventListener('click', (e) => {
+        const chip = e.target.closest('[data-week-key]');
+        if (!chip) return;
+        selectedReviewWeekStart = chip.dataset.weekKey;
         renderWeeklyReview();
+      });
+      document.getElementById('reviewMonthSelector').addEventListener('change', (e) => {
+        const weeks = getAllReviewWeeks();
+        const inMonth = weeks.filter(w => reviewWeekMonthId(w) === e.target.value);
+        const current = getCurrentReviewWeek(weeks);
+        const pick = inMonth.find(w => current && w.key === current.key) || inMonth[0];
+        if (pick) selectedReviewWeekStart = pick.key;
+        renderWeeklyReview();
+      });
+      document.getElementById('btnReviewPrevWeek').addEventListener('click', () => stepReviewWeek(-1));
+      document.getElementById('btnReviewNextWeek').addEventListener('click', () => stepReviewWeek(1));
+      document.getElementById('btnReviewThisWeek').addEventListener('click', () => {
+        const current = getCurrentReviewWeek(getAllReviewWeeks());
+        if (current) { selectedReviewWeekStart = current.key; renderWeeklyReview(); }
       });
       document.querySelectorAll('.weekly-review-input').forEach(input => {
         input.addEventListener('input', () => saveWeeklyReviewField(input.dataset.reviewField, input.value));
