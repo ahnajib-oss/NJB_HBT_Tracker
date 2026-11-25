@@ -532,6 +532,13 @@
           <label class="block"><span class="text-sm font-semibold text-slate-700">Apa yang membantu saya tetap konsisten?</span><textarea data-review-field="supports" rows="4" placeholder="Rutinitas, lingkungan, atau dukungan yang membantu..." class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
           <label class="block"><span class="text-sm font-semibold text-slate-700">Satu fokus kecil untuk pekan depan</span><textarea data-review-field="nextFocus" rows="4" placeholder="Pilih langkah yang realistis dan spesifik..." class="weekly-review-input mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/15"></textarea></label>
         </div>
+        <div class="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p id="reviewSubmitStatus" class="text-xs text-slate-500">Isi minimal satu pertanyaan lalu tekan Submit.</p>
+          <button type="button" id="btnSubmitReview" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold bg-[#006a61] hover:bg-[#004d46] text-white shadow-sm transition w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#006a61]">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <span id="btnSubmitReviewLabel">Submit Review</span>
+          </button>
+        </div>
       </div>
       <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-emerald-900/10">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-4"><div><h3 class="font-bold text-slate-900">Review sebelumnya</h3><p class="text-xs text-slate-500 mt-1">Pilih catatan yang pernah disimpan untuk membacanya atau melanjutkan edit.</p></div><span id="reviewHistoryCount" class="text-xs text-slate-500"></span></div>
@@ -2623,6 +2630,76 @@
       return `${d.getDate()} ${month} ${d.getFullYear()}`;
     }
 
+    const REVIEW_TEXT_FIELDS = ['wins', 'challenges', 'supports', 'nextFocus'];
+
+    // Status review: empty | draft | submitted | modified (sudah submit, lalu diedit lagi)
+    function getReviewStatus(review) {
+      const hasText = REVIEW_TEXT_FIELDS.some(f => String((review && review[f]) || '').trim());
+      if (!hasText) return 'empty';
+      const submittedAt = Number(review && review._submittedAt) || 0;
+      const editedAt = Number(review && review._editedAt) || 0;
+      if (!submittedAt) return 'draft';
+      return editedAt > submittedAt ? 'modified' : 'submitted';
+    }
+
+    function formatReviewSubmitTime(ts) {
+      try {
+        return new Date(ts).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return new Date(ts).toISOString();
+      }
+    }
+
+    function updateReviewSubmitUI() {
+      const saveEl = document.getElementById('reviewSaveStatus');
+      const statusEl = document.getElementById('reviewSubmitStatus');
+      const btn = document.getElementById('btnSubmitReview');
+      const label = document.getElementById('btnSubmitReviewLabel');
+      if (!saveEl || !statusEl || !btn || !label) return;
+
+      const review = (state.weeklyReviews && state.weeklyReviews[selectedReviewWeekStart]) || {};
+      const status = getReviewStatus(review);
+      const when = review._submittedAt ? formatReviewSubmitTime(review._submittedAt) : '';
+
+      if (status === 'submitted') {
+        saveEl.textContent = 'Terkirim ✓';
+        statusEl.textContent = `Review pekan ini sudah disubmit pada ${when}.`;
+        label.textContent = 'Terkirim';
+        btn.disabled = true;
+      } else if (status === 'modified') {
+        saveEl.textContent = 'Ada perubahan';
+        statusEl.textContent = `Disubmit ${when}, lalu ada perubahan baru. Tekan Submit untuk memperbarui.`;
+        label.textContent = 'Submit Perubahan';
+        btn.disabled = false;
+      } else if (status === 'draft') {
+        saveEl.textContent = 'Draft tersimpan';
+        statusEl.textContent = 'Draft tersimpan otomatis. Tekan Submit jika review pekan ini sudah selesai.';
+        label.textContent = 'Submit Review';
+        btn.disabled = false;
+      } else {
+        saveEl.textContent = 'Belum diisi';
+        statusEl.textContent = 'Isi minimal satu pertanyaan lalu tekan Submit.';
+        label.textContent = 'Submit Review';
+        btn.disabled = true;
+      }
+    }
+
+    function submitWeeklyReview() {
+      if (!selectedReviewWeekStart) return;
+      const review = state.weeklyReviews && state.weeklyReviews[selectedReviewWeekStart];
+      if (getReviewStatus(review) === 'empty') {
+        showToast('Isi minimal satu pertanyaan sebelum submit.', 'error');
+        return;
+      }
+      clearTimeout(reviewSaveTimer);
+      review._submittedAt = Date.now();
+      persistStateToCloud(true);
+      renderWeeklyReview();
+      showToast(isCloudConnected
+        ? 'Review pekan ini terkirim & tersinkron ✓'
+        : 'Review terkirim — tersimpan di perangkat ini ✓');
+    }
+
     function renderWeeklyReview() {
       const weeks = getAllReviewWeeks();
       const selector = document.getElementById('reviewWeekSelector');
@@ -2658,10 +2735,10 @@
       document.getElementById('reviewActiveDays').textContent = `${activeDays} / ${dayDates.length}`;
       document.getElementById('reviewTopHabit').textContent = best?.done ? best.habit.title : 'Belum ada data';
       document.getElementById('reviewTopHabitDetail').textContent = best?.done ? `${best.done} kali ditandai pekan ini` : 'Mulai tandai progres harian Anda';
-      document.getElementById('reviewSaveStatus').textContent = 'Tersimpan';
+      updateReviewSubmitUI();
 
       const history = document.getElementById('reviewHistoryList');
-      const saved = Object.entries(state.weeklyReviews || {}).filter(([, fields]) => fields && Object.values(fields).some(v => String(v || '').trim())).sort(([a],[b]) => b.localeCompare(a));
+      const saved = Object.entries(state.weeklyReviews || {}).filter(([, fields]) => fields && REVIEW_TEXT_FIELDS.some(f => String(fields[f] || '').trim())).sort(([a],[b]) => b.localeCompare(a));
       document.getElementById('reviewHistoryCount').textContent = `${saved.length} review tersimpan`;
       history.innerHTML = saved.length ? saved.map(([key, fields]) => {
         const savedWeek = weeks.find(w => w.key === key);
@@ -2669,7 +2746,11 @@
         const end = savedWeek?.endIn || new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
         const excerpt = fields.nextFocus || fields.wins || fields.challenges || fields.supports || 'Review tersimpan';
         const selected = key === selectedReviewWeekStart;
-        return `<button type="button" data-open-review="${escapeHtml(key)}" class="w-full text-left rounded-xl border ${selected ? 'border-[#006a61] bg-teal-50/70' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'} p-3.5 transition"><span class="flex items-center justify-between gap-3"><span class="text-sm font-bold text-slate-800">${formatReviewDate(start)} – ${formatReviewDate(end)}</span><span class="text-[11px] font-semibold text-[#006a61]">${selected ? 'Sedang dibuka' : 'Buka review →'}</span></span><span class="block mt-1.5 text-xs text-slate-600 line-clamp-2">${escapeHtml(String(excerpt).slice(0, 180))}</span></button>`;
+        const reviewStatus = getReviewStatus(fields);
+        const badge = reviewStatus === 'submitted'
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Terkirim</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Draft</span>';
+        return `<button type="button" data-open-review="${escapeHtml(key)}" class="w-full text-left rounded-xl border ${selected ? 'border-[#006a61] bg-teal-50/70' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'} p-3.5 transition"><span class="flex items-center justify-between gap-3"><span class="flex items-center gap-2 flex-wrap text-sm font-bold text-slate-800"><span>${formatReviewDate(start)} – ${formatReviewDate(end)}</span>${badge}</span><span class="text-[11px] font-semibold text-[#006a61]">${selected ? 'Sedang dibuka' : 'Buka review →'}</span></span><span class="block mt-1.5 text-xs text-slate-600 line-clamp-2">${escapeHtml(String(excerpt).slice(0, 180))}</span></button>`;
       }).join('') : '<div class="rounded-xl border border-dashed border-slate-300 p-5 text-center"><p class="text-sm font-semibold text-slate-700">Belum ada review tersimpan</p><p class="text-xs text-slate-500 mt-1">Pilih pekan di atas dan isi refleksi. Catatan Anda akan muncul di sini.</p></div>';
     }
 
@@ -2678,11 +2759,13 @@
       if (!state.weeklyReviews) state.weeklyReviews = {};
       if (!state.weeklyReviews[selectedReviewWeekStart]) state.weeklyReviews[selectedReviewWeekStart] = {};
       state.weeklyReviews[selectedReviewWeekStart][field] = value;
+      state.weeklyReviews[selectedReviewWeekStart]._editedAt = Date.now();
+      updateReviewSubmitUI();
       document.getElementById('reviewSaveStatus').textContent = 'Menyimpan…';
       clearTimeout(reviewSaveTimer);
       reviewSaveTimer = setTimeout(() => {
         persistStateToCloud(true);
-        document.getElementById('reviewSaveStatus').textContent = 'Tersimpan';
+        updateReviewSubmitUI();
       }, 450);
     }
 
@@ -2912,6 +2995,7 @@
         renderWeeklyReview();
         document.getElementById('reviewWeekSelector').focus();
       });
+      document.getElementById('btnSubmitReview').addEventListener('click', submitWeeklyReview);
       document.getElementById('reviewWeekSelector').addEventListener('change', (e) => {
         selectedReviewWeekStart = e.target.value;
         renderWeeklyReview();
