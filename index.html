@@ -1400,6 +1400,8 @@
       return firestoreDocFn(db, FIRESTORE_COLLECTION, syncRoomCode);
     }
 
+    let serverWatchdogTimer = null;
+
     function attachFirestoreListener() {
       if (!db || !currentUser || !firestoreOnSnapshotFn) return;
 
@@ -1411,9 +1413,16 @@
       const docRef = getActiveFirestoreDocRef();
       if (!docRef) return;
 
+      // Watchdog: jika server Cloud tidak merespons (umum di jaringan seluler tertentu), beri tahu pengguna.
+      if (serverWatchdogTimer) clearTimeout(serverWatchdogTimer);
+      serverWatchdogTimer = setTimeout(() => {
+        updateSyncUI('fallback', 'Belum ada respons dari server Cloud setelah 12 detik. Periksa koneksi internet, matikan VPN / DNS pribadi / Penghemat Data, lalu buka ulang halaman. Aplikasi mencoba menyambung lagi otomatis.');
+      }, 12000);
+
       unsubscribeSnapshot = firestoreOnSnapshotFn(
         docRef,
         (snap) => {
+          const fromCache = Boolean(snap.metadata && snap.metadata.fromCache);
           if (snap.exists()) {
             const remoteData = snap.data();
             if (remoteData && Array.isArray(remoteData.habits)) {
@@ -1430,12 +1439,18 @@
               isApplyingRemoteUpdate = false;
               renderAll();
             }
-          } else {
+          } else if (!fromCache) {
+            // Dokumen benar-benar belum ada di server -> buat dari data lokal.
+            // (Jika data hanya dari cache/offline, JANGAN menulis, agar data cloud tidak tertimpa.)
             persistStateToCloud(true);
           }
-          updateSyncUI('synced');
+          if (!fromCache) {
+            if (serverWatchdogTimer) { clearTimeout(serverWatchdogTimer); serverWatchdogTimer = null; }
+            updateSyncUI('synced');
+          }
         },
         (err) => {
+          if (serverWatchdogTimer) { clearTimeout(serverWatchdogTimer); serverWatchdogTimer = null; }
           let diagMsg = `Gagal terhubung ke Cloud Firestore (${err.code || err.message}). `;
           if (err.code === 'permission-denied') {
             diagMsg += 'Periksa Firestore Security Rules di Firebase Console agar mengizinkan akses koleksi "habit_tracker_workspaces". ';
@@ -1494,27 +1509,56 @@
       }
     }
 
-    async function bootstrapFirebase() {
-      updateSyncCodeLabels();
-      loadStateFromLocalCache();
-      renderAll();
+    let authModRef = null;
+    let bootstrappingCloud = false;
+    let lastResumeAttempt = 0;
+
+    function withTimeout(promise, ms, code) {
+      return new Promise((resolve, reject) => {
+        const t = setTimeout(() => reject({ code, message: 'timeout' }), ms);
+        promise.then(
+          (v) => { clearTimeout(t); resolve(v); },
+          (e) => { clearTimeout(t); reject(e); }
+        );
+      });
+    }
+
+    async function bootstrapFirebase(isRetry = false) {
+      if (bootstrappingCloud) return;
+      bootstrappingCloud = true;
+
+      if (!isRetry) {
+        updateSyncCodeLabels();
+        loadStateFromLocalCache();
+        renderAll();
+      }
 
       try {
-        const [appMod, authMod, fsMod] = await Promise.all([
-          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
-          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
-          import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js")
-        ]);
+        if (!db) {
+          const [appMod, authMod, fsMod] = await withTimeout(Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
+            import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js")
+          ]), 20000, 'load-timeout');
 
-        firebaseApp = appMod.initializeApp(firebaseConfig);
-        auth = authMod.getAuth(firebaseApp);
-        db = fsMod.getFirestore(firebaseApp);
-        firestoreDocFn = fsMod.doc;
-        firestoreSetDocFn = fsMod.setDoc;
-        firestoreOnSnapshotFn = fsMod.onSnapshot;
+          firebaseApp = appMod.initializeApp(firebaseConfig);
+          auth = authMod.getAuth(firebaseApp);
+          authModRef = authMod;
+          try {
+            // Auto-deteksi long-polling: memperbaiki sinkronisasi di jaringan seluler / proxy yang memblokir WebChannel.
+            db = fsMod.initializeFirestore(firebaseApp, { experimentalAutoDetectLongPolling: true });
+          } catch (e) {
+            db = fsMod.getFirestore(firebaseApp);
+          }
+          firestoreDocFn = fsMod.doc;
+          firestoreSetDocFn = fsMod.setDoc;
+          firestoreOnSnapshotFn = fsMod.onSnapshot;
+        }
 
-        const userCred = await authMod.signInAnonymously(auth);
-        currentUser = userCred.user;
+        if (!currentUser) {
+          const userCred = await withTimeout(authModRef.signInAnonymously(auth), 20000, 'auth-timeout');
+          currentUser = userCred.user;
+        }
 
         if (currentUser) {
           const uidField = document.getElementById('displayFullUserId');
@@ -1524,10 +1568,29 @@
       } catch (err) {
         const uidField = document.getElementById('displayFullUserId');
         if (uidField) uidField.value = 'Offline / Mode Lokal';
-        let diagMsg = `Koneksi Cloud (${err.code || err.message}). Data tersimpan otomatis di penyimpanan lokal browser perangkat ini.`;
+        let diagMsg = `Koneksi Cloud (${err.code || err.message}). Data tersimpan otomatis di penyimpanan lokal browser perangkat ini. Aplikasi akan mencoba menyambung lagi saat Anda kembali ke halaman ini atau internet aktif.`;
         updateSyncUI('fallback', diagMsg);
+      } finally {
+        bootstrappingCloud = false;
       }
     }
+
+    // HP sering menidurkan tab / memutus koneksi saat aplikasi di background -> sambungkan ulang saat kembali.
+    function resumeCloudConnection() {
+      const now = Date.now();
+      if (now - lastResumeAttempt < 3000) return;
+      lastResumeAttempt = now;
+      if (db && currentUser) {
+        attachFirestoreListener();
+      } else {
+        bootstrapFirebase(true);
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') resumeCloudConnection();
+    });
+    window.addEventListener('online', resumeCloudConnection);
+    window.addEventListener('pageshow', (e) => { if (e.persisted) resumeCloudConnection(); });
 
     /* ==========================================================================
        5. FUNGSI PERHITUNGAN & ANALITIK DATA
