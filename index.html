@@ -516,14 +516,8 @@
         <p class="text-sm text-slate-300 mt-1 max-w-2xl">Buka review lama kapan saja atau mulai refleksi untuk pekan mana pun dalam periode tracker.</p>
         <div class="mt-5 space-y-3">
           <div class="flex items-center gap-2">
-            <button type="button" id="btnReviewPrevWeek" aria-label="Pekan sebelumnya" class="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-            </button>
             <label for="reviewMonthSelector" class="sr-only">Pilih bulan review</label>
             <select id="reviewMonthSelector" class="flex-1 sm:flex-none sm:min-w-[210px] rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"></select>
-            <button type="button" id="btnReviewNextWeek" aria-label="Pekan berikutnya" class="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-            </button>
           </div>
           <div id="reviewWeekChips" role="group" aria-label="Pilih pekan" class="grid grid-flow-col auto-cols-fr gap-1.5 sm:gap-2 pt-1 max-w-3xl"></div>
           <div class="flex items-center justify-between gap-3 min-h-[24px]">
@@ -2771,18 +2765,7 @@
       const isNowSelected = current && current.key === selectedReviewWeekStart;
       document.getElementById('reviewSelectedWeekLabel').textContent =
         `Pekan ${posInMonth} · ${formatReviewRange(selWeek.startIn, selWeek.endIn)} ${selWeek.endIn.getFullYear()}${isNowSelected ? ' · Pekan ini' : ''}`;
-      document.getElementById('btnReviewPrevWeek').disabled = selIdx <= 0;
-      document.getElementById('btnReviewNextWeek').disabled = selIdx >= weeks.length - 1;
       document.getElementById('btnReviewThisWeek').classList.toggle('hidden', !current || isNowSelected);
-    }
-
-    function stepReviewWeek(delta) {
-      const weeks = getAllReviewWeeks();
-      const idx = weeks.findIndex(w => w.key === selectedReviewWeekStart);
-      const next = weeks[idx + delta];
-      if (!next) return;
-      selectedReviewWeekStart = next.key;
-      renderWeeklyReview();
     }
 
     function renderWeeklyReview() {
@@ -3093,8 +3076,6 @@
         if (pick) selectedReviewWeekStart = pick.key;
         renderWeeklyReview();
       });
-      document.getElementById('btnReviewPrevWeek').addEventListener('click', () => stepReviewWeek(-1));
-      document.getElementById('btnReviewNextWeek').addEventListener('click', () => stepReviewWeek(1));
       document.getElementById('btnReviewThisWeek').addEventListener('click', () => {
         const current = getCurrentReviewWeek(getAllReviewWeeks());
         if (current) { selectedReviewWeekStart = current.key; renderWeeklyReview(); }
