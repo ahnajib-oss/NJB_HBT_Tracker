@@ -352,8 +352,8 @@
             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-[#006a61]" id="dashBadgePeriod">Desember 2026</span>
             <span class="text-xs text-slate-500" id="dashDaysInfo">31 Hari Kalender</span>
           </div>
-          <h2 class="text-base sm:text-xl font-bold text-[#0f172a] mt-1">
-            Ringkasan Performa & Analitik
+          <h2 id="dashGreeting" class="text-base sm:text-xl font-bold text-[#0f172a] mt-1">
+            Selamat datang, Ahmad Najib
           </h2>
           <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
             Metrik dan grafik terhubung real-time dengan checklist Habit Tracker Anda.
@@ -3227,6 +3227,35 @@
 
 
     /* ==========================================================================
+       SAPAAN DASHBOARD (menyesuaikan waktu perangkat secara real-time)
+       ========================================================================== */
+    const DASHBOARD_DISPLAY_NAME = 'Ahmad Najib';
+
+    function getGreetingPrefix(date = new Date()) {
+      const hour = date.getHours();
+      if (hour >= 4 && hour < 11) return 'Selamat pagi';
+      if (hour >= 11 && hour < 15) return 'Selamat siang';
+      if (hour >= 15 && hour < 18) return 'Selamat sore';
+      return 'Selamat malam';
+    }
+
+    function updateDashboardGreeting() {
+      const el = document.getElementById('dashGreeting');
+      if (!el) return;
+      const text = `${getGreetingPrefix()}, ${DASHBOARD_DISPLAY_NAME}`;
+      if (el.textContent.trim() !== text) el.textContent = text;
+    }
+
+    function startDashboardGreeting() {
+      updateDashboardGreeting();
+      setInterval(updateDashboardGreeting, 30000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') updateDashboardGreeting();
+      });
+      window.addEventListener('focus', updateDashboardGreeting);
+    }
+
+    /* ==========================================================================
        DRAG & DROP URUTAN KEBIASAAN (mouse, sentuh, dan keyboard)
        ========================================================================== */
     function startHabitDrag(container, handle, downEvent) {
@@ -3736,6 +3765,7 @@
       });
       document.getElementById('btnLoginRetry').addEventListener('click', () => window.location.reload());
       initHabitSorting();
+      startDashboardGreeting();
 
       document.getElementById('btnHeaderCopySyncCode').addEventListener('click', async () => {
         await copyTextToClipboard(syncRoomCode);
