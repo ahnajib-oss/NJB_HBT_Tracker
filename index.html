@@ -194,34 +194,45 @@
     tr.sortable-item.is-dragging > td { background-color: #ecfdf5; box-shadow: 0 1px 0 0 #6ee7b7, 0 -1px 0 0 #6ee7b7; }
     body.is-sorting { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
-    /* ---- Halaman login: gradient terang + animasi halus ---- */
+    /* ---- Halaman login: gradient terang + animasi yang terasa ---- */
     .login-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
-      background: linear-gradient(180deg, #bfeadf 0%, #d9f3ec 34%, #eef9f6 62%, #ffffff 100%); }
-    /* pergeseran warna sangat pelan di atas gradient dasar */
+      background: linear-gradient(180deg, #b4e8dc 0%, #d4f2ea 34%, #eef9f6 62%, #ffffff 100%); }
+    /* lapisan warna yang bergeser bolak-balik di atas gradient dasar */
     .login-bg::before { content: ''; position: absolute; inset: 0;
-      background: linear-gradient(115deg, rgba(0,106,97,0.10), rgba(52,211,153,0.10), rgba(125,211,252,0.14), rgba(0,106,97,0.10));
-      background-size: 300% 300%; animation: loginShift 20s ease-in-out infinite; }
+      background: linear-gradient(115deg, rgba(0,106,97,0.20), rgba(52,211,153,0.24), rgba(125,211,252,0.30), rgba(0,106,97,0.20));
+      background-size: 300% 300%; animation: loginShift 11s ease-in-out infinite; }
     /* lengkung putih di bagian bawah seperti referensi */
     .login-bg::after { content: ''; position: absolute; left: -30%; right: -30%; bottom: -46%; height: 74%;
       border-radius: 50%; background: #fff; filter: blur(28px); opacity: 0.96; }
-    .login-blob { position: absolute; border-radius: 9999px; filter: blur(64px); opacity: 0.5; will-change: transform; }
-    .login-blob.b1 { width: 46vmax; height: 46vmax; left: -14vmax; top: -22vmax;
-      background: radial-gradient(circle at 35% 35%, #5fd3bf 0%, rgba(95,211,191,0) 68%); animation: loginDrift1 24s ease-in-out infinite alternate; }
-    .login-blob.b2 { width: 40vmax; height: 40vmax; right: -12vmax; top: -14vmax;
-      background: radial-gradient(circle at 50% 50%, #9fe3f2 0%, rgba(159,227,242,0) 68%); animation: loginDrift2 28s ease-in-out infinite alternate; }
-    .login-blob.b3 { width: 34vmax; height: 34vmax; left: 28vw; top: 4vmax;
-      background: radial-gradient(circle at 50% 50%, #b4f0cc 0%, rgba(180,240,204,0) 68%); animation: loginDrift3 32s ease-in-out infinite alternate; }
+    .login-blob { position: absolute; border-radius: 9999px; filter: blur(52px); opacity: 0.8; will-change: transform; }
+    .login-blob.b1 { width: 54vmax; height: 54vmax; left: -16vmax; top: -24vmax;
+      background: radial-gradient(circle at 35% 35%, #34c9b0 0%, rgba(52,201,176,0) 68%); animation: loginDrift1 13s ease-in-out infinite alternate; }
+    .login-blob.b2 { width: 48vmax; height: 48vmax; right: -14vmax; top: -16vmax;
+      background: radial-gradient(circle at 50% 50%, #7fd9ee 0%, rgba(127,217,238,0) 68%); animation: loginDrift2 16s ease-in-out infinite alternate; }
+    .login-blob.b3 { width: 42vmax; height: 42vmax; left: 30vw; top: 2vmax;
+      background: radial-gradient(circle at 50% 50%, #8fe8b8 0%, rgba(143,232,184,0) 68%); animation: loginDrift3 19s ease-in-out infinite alternate; }
+    .login-blob.b4 { width: 38vmax; height: 38vmax; left: 4vw; top: 22vh;
+      background: radial-gradient(circle at 50% 50%, #5fdcc4 0%, rgba(95,220,196,0) 68%); animation: loginDrift4 17s ease-in-out infinite alternate; }
     @keyframes loginShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    @keyframes loginDrift1 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9vmax, 7vmax, 0) scale(1.15); } }
-    @keyframes loginDrift2 { from { transform: translate3d(0, 0, 0) scale(1.1); } to { transform: translate3d(-10vmax, 6vmax, 0) scale(0.92); } }
-    @keyframes loginDrift3 { from { transform: translate3d(0, 0, 0) scale(0.95); } to { transform: translate3d(-6vmax, 9vmax, 0) scale(1.18); } }
+    @keyframes loginDrift1 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(28vmax, 20vmax, 0) scale(1.28); } }
+    @keyframes loginDrift2 { from { transform: translate3d(0, 0, 0) scale(1.15); } to { transform: translate3d(-30vmax, 18vmax, 0) scale(0.82); } }
+    @keyframes loginDrift3 { from { transform: translate3d(0, 0, 0) scale(0.9); } to { transform: translate3d(-22vmax, 26vmax, 0) scale(1.32); } }
+    @keyframes loginDrift4 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(32vmax, -10vmax, 0) scale(1.22); } }
     @media (prefers-reduced-motion: reduce) {
-      .login-bg::before, .login-blob, .login-blob.b1, .login-blob.b2, .login-blob.b3 { animation: none !important; }
+      .login-bg::before, .login-blob, .login-blob.b1, .login-blob.b2, .login-blob.b3, .login-blob.b4 { animation: none !important; }
     }
     .login-card { background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 28px 70px -28px rgba(0, 106, 97, 0.38), 0 2px 10px rgba(15, 23, 42, 0.04); }
     .login-btn { background: linear-gradient(180deg, #0b8d80 0%, #006a61 100%); box-shadow: 0 10px 24px -10px rgba(0, 106, 97, 0.7); }
     .login-btn:hover:not(:disabled) { background: linear-gradient(180deg, #0a8174 0%, #005a53 100%); }
+
+    /* ---- Kutipan produktivitas di dashboard ---- */
+    .dash-quote-box { display: grid; }
+    .dash-quote { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(6px);
+      transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s linear 0.7s; }
+    .dash-quote.is-active { opacity: 1; visibility: visible; transform: none;
+      transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s; }
+    @media (prefers-reduced-motion: reduce) { .dash-quote, .dash-quote.is-active { transition: none; transform: none; } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-teal-200 selection:text-teal-950">
@@ -355,9 +366,7 @@
           <h2 id="dashGreeting" class="text-base sm:text-xl font-bold text-[#0f172a] mt-1">
             Selamat datang, Ahmad Najib
           </h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Metrik dan grafik terhubung real-time dengan checklist Habit Tracker Anda.
-          </p>
+          <div id="dashQuoteBox" class="dash-quote-box mt-1"></div>
         </div>
 
         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
@@ -1105,6 +1114,7 @@
       <span class="login-blob b1"></span>
       <span class="login-blob b2"></span>
       <span class="login-blob b3"></span>
+      <span class="login-blob b4"></span>
     </div>
 
     <!-- Brand kiri atas -->
@@ -3256,6 +3266,71 @@
     }
 
     /* ==========================================================================
+       KUTIPAN PRODUKTIVITAS (berganti otomatis)
+       ========================================================================== */
+    const QUOTE_ROTATE_MS = 30000; // ganti kutipan setiap 30 detik
+    const PRODUCTIVITY_QUOTES = [
+      { text: 'Waktu yang hilang tidak akan pernah ditemukan lagi.', author: 'Benjamin Franklin' },
+      { text: 'Tidak cukup hanya sibuk; semut pun sibuk. Pertanyaannya: sibuk untuk apa?', author: 'Henry David Thoreau' },
+      { text: 'Waktu adalah sumber daya paling langka, dan jika tidak dikelola, tidak ada hal lain yang bisa dikelola.', author: 'Peter Drucker' },
+      { text: 'Efisiensi adalah melakukan sesuatu dengan benar; efektivitas adalah melakukan hal yang benar.', author: 'Peter Drucker' },
+      { text: 'Kuncinya bukan memprioritaskan isi jadwal Anda, tetapi menjadwalkan prioritas Anda.', author: 'Stephen Covey' },
+      { text: 'Kita adalah apa yang kita lakukan berulang kali. Keunggulan bukanlah sebuah tindakan, melainkan kebiasaan.', author: 'Will Durant' },
+      { text: 'Amatir menunggu inspirasi; sisanya langsung bangun dan bekerja.', author: 'Stephen King' },
+      { text: 'Pusatkan semua pikiran pada pekerjaan yang sedang dikerjakan. Sinar matahari tidak membakar sampai difokuskan.', author: 'Alexander Graham Bell' },
+      { text: 'Produktivitas tidak pernah kebetulan. Ia selalu hasil dari komitmen pada keunggulan, perencanaan cerdas, dan usaha yang terfokus.', author: 'Paul J. Meyer' },
+      { text: 'Tidak ada yang benar-benar sulit jika dibagi menjadi pekerjaan-pekerjaan kecil.', author: 'Henry Ford' },
+      { text: 'Fokuslah menjadi produktif, bukan sekadar sibuk.', author: 'Tim Ferriss' },
+      { text: 'Jangan hitung hari-harinya, buatlah hari-hari itu berarti.', author: 'Muhammad Ali' },
+      { text: 'Hidup Anda tidak akan berubah sampai Anda mengubah sesuatu yang Anda lakukan setiap hari.', author: 'John C. Maxwell' }
+    ];
+
+    function startDashboardQuotes() {
+      const box = document.getElementById('dashQuoteBox');
+      if (!box || !PRODUCTIVITY_QUOTES.length) return;
+
+      // Semua kutipan ditumpuk di satu sel grid, sehingga tinggi kotak = kutipan terpanjang (tidak ada layout yang melompat).
+      box.innerHTML = PRODUCTIVITY_QUOTES.map(q => `
+        <figure class="dash-quote" aria-hidden="true">
+          <blockquote class="text-xs sm:text-sm text-slate-600 italic leading-relaxed">“${escapeHtml(q.text)}”</blockquote>
+          <figcaption class="mt-1 text-[11px] sm:text-xs font-semibold text-[#006a61]">— ${escapeHtml(q.author)}</figcaption>
+        </figure>`).join('');
+      const items = Array.from(box.querySelectorAll('.dash-quote'));
+
+      // Urutan acak tanpa pengulangan sampai semua kutipan tampil, lalu diacak ulang
+      let queue = [];
+      let lastShown = -1;
+      const nextIndex = () => {
+        if (!queue.length) {
+          queue = items.map((_, i) => i);
+          for (let i = queue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [queue[i], queue[j]] = [queue[j], queue[i]];
+          }
+          if (queue.length > 1 && queue[0] === lastShown) queue.push(queue.shift());
+        }
+        return queue.shift();
+      };
+
+      let current = -1;
+      const show = (index) => {
+        items.forEach((el, i) => {
+          const active = i === index;
+          el.classList.toggle('is-active', active);
+          el.setAttribute('aria-hidden', String(!active));
+        });
+        current = index;
+        lastShown = index;
+      };
+
+      show(nextIndex());
+      setInterval(() => {
+        if (document.hidden) return; // jangan ganti saat tab tidak terlihat
+        show(nextIndex());
+      }, QUOTE_ROTATE_MS);
+    }
+
+    /* ==========================================================================
        DRAG & DROP URUTAN KEBIASAAN (mouse, sentuh, dan keyboard)
        ========================================================================== */
     function startHabitDrag(container, handle, downEvent) {
@@ -3766,6 +3841,7 @@
       document.getElementById('btnLoginRetry').addEventListener('click', () => window.location.reload());
       initHabitSorting();
       startDashboardGreeting();
+      startDashboardQuotes();
 
       document.getElementById('btnHeaderCopySyncCode').addEventListener('click', async () => {
         await copyTextToClipboard(syncRoomCode);
