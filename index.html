@@ -193,6 +193,35 @@
     div.sortable-item.is-dragging { box-shadow: 0 14px 30px -10px rgba(15, 23, 42, 0.4); border-color: #006a61; }
     tr.sortable-item.is-dragging > td { background-color: #ecfdf5; box-shadow: 0 1px 0 0 #6ee7b7, 0 -1px 0 0 #6ee7b7; }
     body.is-sorting { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+
+    /* ---- Halaman login: gradient terang + animasi halus ---- */
+    .login-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background: linear-gradient(180deg, #bfeadf 0%, #d9f3ec 34%, #eef9f6 62%, #ffffff 100%); }
+    /* pergeseran warna sangat pelan di atas gradient dasar */
+    .login-bg::before { content: ''; position: absolute; inset: 0;
+      background: linear-gradient(115deg, rgba(0,106,97,0.10), rgba(52,211,153,0.10), rgba(125,211,252,0.14), rgba(0,106,97,0.10));
+      background-size: 300% 300%; animation: loginShift 20s ease-in-out infinite; }
+    /* lengkung putih di bagian bawah seperti referensi */
+    .login-bg::after { content: ''; position: absolute; left: -30%; right: -30%; bottom: -46%; height: 74%;
+      border-radius: 50%; background: #fff; filter: blur(28px); opacity: 0.96; }
+    .login-blob { position: absolute; border-radius: 9999px; filter: blur(64px); opacity: 0.5; will-change: transform; }
+    .login-blob.b1 { width: 46vmax; height: 46vmax; left: -14vmax; top: -22vmax;
+      background: radial-gradient(circle at 35% 35%, #5fd3bf 0%, rgba(95,211,191,0) 68%); animation: loginDrift1 24s ease-in-out infinite alternate; }
+    .login-blob.b2 { width: 40vmax; height: 40vmax; right: -12vmax; top: -14vmax;
+      background: radial-gradient(circle at 50% 50%, #9fe3f2 0%, rgba(159,227,242,0) 68%); animation: loginDrift2 28s ease-in-out infinite alternate; }
+    .login-blob.b3 { width: 34vmax; height: 34vmax; left: 28vw; top: 4vmax;
+      background: radial-gradient(circle at 50% 50%, #b4f0cc 0%, rgba(180,240,204,0) 68%); animation: loginDrift3 32s ease-in-out infinite alternate; }
+    @keyframes loginShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes loginDrift1 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9vmax, 7vmax, 0) scale(1.15); } }
+    @keyframes loginDrift2 { from { transform: translate3d(0, 0, 0) scale(1.1); } to { transform: translate3d(-10vmax, 6vmax, 0) scale(0.92); } }
+    @keyframes loginDrift3 { from { transform: translate3d(0, 0, 0) scale(0.95); } to { transform: translate3d(-6vmax, 9vmax, 0) scale(1.18); } }
+    @media (prefers-reduced-motion: reduce) {
+      .login-bg::before, .login-blob, .login-blob.b1, .login-blob.b2, .login-blob.b3 { animation: none !important; }
+    }
+    .login-card { background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 28px 70px -28px rgba(0, 106, 97, 0.38), 0 2px 10px rgba(15, 23, 42, 0.04); }
+    .login-btn { background: linear-gradient(180deg, #0b8d80 0%, #006a61 100%); box-shadow: 0 10px 24px -10px rgba(0, 106, 97, 0.7); }
+    .login-btn:hover:not(:disabled) { background: linear-gradient(180deg, #0a8174 0%, #005a53 100%); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-teal-200 selection:text-teal-950">
@@ -1071,47 +1100,59 @@
 
   <!-- ==================== NOTIFIKASI TOAST (POSISI ADAPTIF MOBILE & DESKTOP) ==================== -->
   <!-- ==================== HALAMAN LOGIN (menutup seluruh aplikasi sampai terverifikasi) ==================== -->
-  <div id="loginGate" class="fixed inset-0 z-[70] bg-[#0f172a] flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="loginGateTitle">
-    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-      <div class="px-6 pt-7 pb-6 bg-gradient-to-br from-[#006a61] to-emerald-600 text-white">
-        <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center mb-4">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        </div>
-        <h2 id="loginGateTitle" class="text-xl font-bold tracking-tight">Habit Tracker</h2>
-        <p class="text-sm text-emerald-50/90 mt-1.5">Masuk untuk membuka dashboard kebiasaan Anda.</p>
-      </div>
+  <div id="loginGate" class="fixed inset-0 z-[70] bg-white overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="loginGateTitle">
+    <div class="login-bg" aria-hidden="true">
+      <span class="login-blob b1"></span>
+      <span class="login-blob b2"></span>
+      <span class="login-blob b3"></span>
+    </div>
 
-      <!-- Status: memeriksa sesi -->
-      <div id="loginGateChecking" class="p-8 flex flex-col items-center gap-3 text-slate-500">
-        <svg class="w-7 h-7 animate-spin text-[#006a61]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-        <p class="text-sm">Memeriksa sesi login…</p>
+    <!-- Brand kiri atas -->
+    <div class="absolute top-5 left-5 sm:top-7 sm:left-8 z-10 flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0b8d80] to-[#006a61] flex items-center justify-center shadow-md shadow-teal-900/20">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
+      <span class="text-[15px] font-bold tracking-tight text-[#0b3b36]">Habit Tracker</span>
+    </div>
 
-      <!-- Form login -->
-      <form id="loginGateForm" class="hidden p-6 space-y-4" autocomplete="on" novalidate>
-        <div>
-          <label for="loginGateUsername" class="block text-xs font-semibold text-slate-700 mb-1.5">Username</label>
-          <input id="loginGateUsername" name="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" class="w-full px-4 py-3 text-base rounded-xl border border-slate-300 focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20 focus:outline-none" />
+    <div class="relative z-10 min-h-full flex flex-col items-center justify-center px-4 pt-24 pb-24">
+      <h2 id="loginGateTitle" class="text-[26px] sm:text-[32px] leading-tight font-bold tracking-tight text-[#0b3b36] text-center">Masuk ke akun Anda</h2>
+      <p class="mt-2.5 mb-8 text-sm sm:text-[15px] text-[#3f6d66] text-center">Lanjutkan perjalanan kebiasaan Anda hari ini.</p>
+
+      <div class="login-card w-full max-w-[420px] rounded-3xl overflow-hidden">
+        <!-- Status: memeriksa sesi -->
+        <div id="loginGateChecking" class="p-10 flex flex-col items-center gap-3 text-slate-500">
+          <svg class="w-7 h-7 animate-spin text-[#006a61]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          <p class="text-sm">Memeriksa sesi login…</p>
         </div>
-        <div>
-          <label for="loginGatePassword" class="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
-          <div class="relative">
-            <input id="loginGatePassword" name="password" type="password" autocomplete="current-password" class="w-full pl-4 pr-12 py-3 text-base rounded-xl border border-slate-300 focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20 focus:outline-none" />
-            <button type="button" id="btnToggleLoginPassword" aria-label="Tampilkan password" aria-pressed="false" class="absolute inset-y-0 right-0 w-12 flex items-center justify-center text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:text-[#006a61]">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.04 12.32a1 1 0 010-.64C3.42 7.51 7.36 4.5 12 4.5c4.64 0 8.57 3.01 9.96 7.18.07.21.07.43 0 .64C20.58 16.49 16.64 19.5 12 19.5c-4.64 0-8.57-3.01-9.96-7.18z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
+
+        <!-- Form login -->
+        <form id="loginGateForm" class="hidden p-6 sm:p-7 space-y-4" autocomplete="on" novalidate>
+          <div>
+            <label for="loginGateUsername" class="block text-xs font-semibold text-slate-600 mb-1.5">Username</label>
+            <input id="loginGateUsername" name="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" class="w-full h-12 px-4 text-base rounded-xl border border-slate-200 bg-white/80 placeholder-slate-400 focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20 focus:outline-none transition" />
           </div>
-          <p id="loginGateError" role="alert" class="hidden mt-2 text-xs font-medium text-rose-600"></p>
-        </div>
-        <button type="submit" id="loginGateSubmit" class="w-full min-h-[46px] rounded-xl bg-[#006a61] hover:bg-[#00554e] text-white text-sm font-semibold shadow-sm transition disabled:opacity-60 disabled:cursor-wait">Masuk</button>
-        <p class="text-[11px] leading-relaxed text-slate-500 text-center">Halaman ini bersifat pribadi. Hanya pemilik akun yang dapat membuka data kebiasaan.</p>
-      </form>
+          <div>
+            <label for="loginGatePassword" class="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
+            <div class="relative">
+              <input id="loginGatePassword" name="password" type="password" autocomplete="current-password" class="w-full h-12 pl-4 pr-12 text-base rounded-xl border border-slate-200 bg-white/80 placeholder-slate-400 focus:border-[#006a61] focus:ring-2 focus:ring-[#006a61]/20 focus:outline-none transition" />
+              <button type="button" id="btnToggleLoginPassword" aria-label="Tampilkan password" aria-pressed="false" class="absolute inset-y-0 right-0 w-12 flex items-center justify-center text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:text-[#006a61]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.04 12.32a1 1 0 010-.64C3.42 7.51 7.36 4.5 12 4.5c4.64 0 8.57 3.01 9.96 7.18.07.21.07.43 0 .64C20.58 16.49 16.64 19.5 12 19.5c-4.64 0-8.57-3.01-9.96-7.18z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </button>
+            </div>
+            <p id="loginGateError" role="alert" class="hidden mt-2 text-xs font-medium text-rose-600"></p>
+          </div>
+          <button type="submit" id="loginGateSubmit" class="login-btn w-full h-12 rounded-xl text-white text-sm font-semibold transition disabled:opacity-60 disabled:cursor-wait">Masuk</button>
+        </form>
 
-      <!-- Error fatal (layanan login tidak bisa dimuat) -->
-      <div id="loginGateFatal" class="hidden p-6 space-y-4">
-        <p id="loginGateFatalMsg" class="text-sm text-slate-600"></p>
-        <button type="button" id="btnLoginRetry" class="w-full min-h-[44px] rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold transition">Coba Lagi</button>
+        <!-- Error fatal (layanan login tidak bisa dimuat) -->
+        <div id="loginGateFatal" class="hidden p-6 sm:p-7 space-y-4">
+          <p id="loginGateFatalMsg" class="text-sm text-slate-600"></p>
+          <button type="button" id="btnLoginRetry" class="w-full h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold transition">Coba Lagi</button>
+        </div>
       </div>
+
+      <p class="mt-6 text-xs text-[#4c7a73] text-center">Halaman ini bersifat pribadi. Hanya pemilik akun yang dapat membuka data kebiasaan.</p>
     </div>
   </div>
 
